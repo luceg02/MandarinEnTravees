@@ -23,3 +23,9 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+### Marg
+*.pdf
+*.sql
+/MandarinEnTravees/
+documents_a_rendre
