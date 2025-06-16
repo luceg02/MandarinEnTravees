@@ -57,6 +57,16 @@ class User
     #[ORM\Column(length: 255)]
     private ?string $statut_moderation = null;
 
+    public function getRoles(): array {
+        switch ($this->typeCompte) {
+            case 'administrateur':
+                return ['ROLE_ADMIN'];
+            case 'journaliste':
+                return ['ROLE_JOURNALIST'];
+            default:
+                return ['ROLE_USER'];
+        }
+    }
     public function __construct()
     {
         $this->demandes = new ArrayCollection();
