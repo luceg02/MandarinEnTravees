@@ -34,11 +34,11 @@ class Reponse
 
     #[ORM\ManyToOne(inversedBy: 'reponses')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?user $auteur = null;
+    private ?User $auteur = null;
 
     #[ORM\ManyToOne(inversedBy: 'reponses')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?demande $demande = null;
+    private ?Demande $demande = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $verdict = null;
@@ -123,24 +123,24 @@ class Reponse
         return $this;
     }
 
-    public function getAuteur(): ?user
+    public function getAuteur(): ?User
     {
         return $this->auteur;
     }
 
-    public function setAuteur(?user $auteur): static
+    public function setAuteur(?User $auteur): static
     {
         $this->auteur = $auteur;
 
         return $this;
     }
 
-    public function getDemande(): ?demande
+    public function getDemande(): ?Demande
     {
         return $this->demande;
     }
 
-    public function setDemande(?demande $demande): static
+    public function setDemande(?Demande $demande): static
     {
         $this->demande = $demande;
 
