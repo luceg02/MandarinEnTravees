@@ -1,0 +1,132 @@
+{# templates/registration/register.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription - Le Mandarin en Travées{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/registration.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="registration-container">
+    <div class="left-panel">
+        <div class="logo">
+            <div class="logo-icon">🦆</div>
+            <div class="logo-text">
+                <h2>LE MANDARIN</h2>
+                <p>EN TRAVÉES</p>
+            </div>
+        </div>
+        
+        <h1>Rejoignez la communauté du fact-checking collaboratif et participez à la lutte contre la désinformation.</h1>
+        
+        <div class="features">
+            <div class="feature-item">
+                <span class="feature-icon">✅</span>
+                <span>Vérifiez l'information ensemble</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">✅</span>
+                <span>Gagnez en réputation</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">✅</span>
+                <span>Sources vérifiées par des journalistes</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">✅</span>
+                <span>Communauté active et bienveillante</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="right-panel">
+        <div class="form-tabs">
+            <a href="{{ path('app_login') }}" class="form-tab">Connexion</a>
+            <span class="form-tab active">Inscription</span>
+        </div>
+        
+        {% for flash_message in app.flashes('success') %}
+            <div class="alert alert-success">{{ flash_message }}</div>
+        {% endfor %}
+        
+        {% for flash_message in app.flashes('info') %}
+            <div class="alert alert-info">{{ flash_message }}</div>
+        {% endfor %}
+
+        {{ form_start(registrationForm) }}
+        
+        <div class="form-group">
+            <label>Type d'utilisateur</label>
+            <div class="user-type-selection">
+                <div class="user-type-card" data-type="contributeur">
+                    <div class="user-type-icon">👤</div>
+                    <h4>Contributeur</h4>
+                    <p>Participez à la vérification collaborative</p>
+                </div>
+                <div class="user-type-card" data-type="journaliste">
+                    <div class="user-type-icon">📰</div>
+                    <h4>Journaliste</h4>
+                    <p>Validez avec votre expertise professionnelle</p>
+                </div>
+            </div>
+            {{ form_widget(registrationForm.userType, {'attr': {'style': 'display: none;'}}) }}
+            {{ form_errors(registrationForm.userType) }}
+        </div>
+
+        <div class="form-group">
+            <label for="nom">Nom</label>
+            <input type="text" id="nom" name="nom" class="form-control" placeholder="Votre nom" required>
+        </div>
+
+        <div class="form-group">
+            <label for="prenom">Prénom</label>
+            <input type="text" id="prenom" name="prenom" class="form-control" placeholder="Votre prénom" required>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(registrationForm.email) }}
+            {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(registrationForm.email) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(registrationForm.plainPassword) }}
+            {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(registrationForm.plainPassword) }}
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirmer le mot de passe</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Confirmez votre mot de passe" required>
+        </div>
+
+        <div class="journalist-fields" id="journalist-fields">
+            <div class="alert-info">
+                <strong>📋 Validation requise :</strong> Votre compte journaliste sera activé après vérification de vos justificatifs par notre équipe.
+            </div>
+            
+            <div class="form-group">
+                <label for="numeroCartePresse">Numéro de carte de presse</label>
+                <input type="number" id="numeroCartePresse" name="numeroCartePresse" class="form-control" placeholder="Entrez votre numéro de carte de presse">
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_widget(registrationForm.agreeTerms) }}
+            {{ form_label(registrationForm.agreeTerms) }}
+            {{ form_errors(registrationForm.agreeTerms) }}
+        </div>
+
+        <button type="submit" class="btn-primary">S'inscrire</button>
+
+        {{ form_end(registrationForm) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/registration.js') }}"></script>
+{% endblock %}
