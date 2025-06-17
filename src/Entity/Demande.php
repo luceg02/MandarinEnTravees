@@ -43,7 +43,7 @@ class Demande
 
     #[ORM\ManyToOne(inversedBy: 'demandes')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?categorie $categorie = null;
+    private ?Categorie $categorie = null;
 
     /**
      * @var Collection<int, Reponse>
@@ -69,7 +69,6 @@ class Demande
     public function setTitre(string $titre): static
     {
         $this->titre = $titre;
-
         return $this;
     }
 
@@ -81,7 +80,6 @@ class Demande
     public function setDescription(string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -93,7 +91,6 @@ class Demande
     public function setLiensSources(?string $liensSources): static
     {
         $this->liensSources = $liensSources;
-
         return $this;
     }
 
@@ -105,7 +102,6 @@ class Demande
     public function setStatut(?string $statut): static
     {
         $this->statut = $statut;
-
         return $this;
     }
 
@@ -117,7 +113,6 @@ class Demande
     public function setDateCreation(\DateTimeImmutable $dateCreation): static
     {
         $this->dateCreation = $dateCreation;
-
         return $this;
     }
 
@@ -129,7 +124,6 @@ class Demande
     public function setDateModification(?\DateTimeImmutable $dateModification): static
     {
         $this->dateModification = $dateModification;
-
         return $this;
     }
 
@@ -141,7 +135,6 @@ class Demande
     public function setNbReponses(int $nbReponses): static
     {
         $this->nbReponses = $nbReponses;
-
         return $this;
     }
 
@@ -153,19 +146,16 @@ class Demande
     public function setAuteur(?User $auteur): static
     {
         $this->auteur = $auteur;
-
         return $this;
     }
-
-    public function getCategorie(): ?categorie
+    public function getCategorie(): ?Categorie
     {
         return $this->categorie;
     }
 
-    public function setCategorie(?categorie $categorie): static
+    public function setCategorie(?Categorie $categorie): static
     {
         $this->categorie = $categorie;
-
         return $this;
     }
 
@@ -183,19 +173,16 @@ class Demande
             $this->reponses->add($reponse);
             $reponse->setDemande($this);
         }
-
         return $this;
     }
 
     public function removeReponse(Reponse $reponse): static
     {
         if ($this->reponses->removeElement($reponse)) {
-            // set the owning side to null (unless already changed)
             if ($reponse->getDemande() === $this) {
                 $reponse->setDemande(null);
             }
         }
-
         return $this;
     }
 }
