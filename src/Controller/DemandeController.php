@@ -21,20 +21,29 @@ class DemandeController extends AbstractController
     public function nouvelle(
         Request $request, 
         EntityManagerInterface $entityManager,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        DemandeRepository $demandeRepository
     ): Response {
-        // Vérifier que l'utilisateur est connecté
-        if (!$this->getUser()) {
-            $this->addFlash('error', 'Vous devez être connecté pour soumettre une demande.');
-            return $this->redirectToRoute('app_login');
-        }
-        
         $demande = new Demande();
         $form = $this->createForm(DemandeForm::class, $demande);
         
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
+            // Recherche de doublons potentiels
+            //$doublons = $this->rechercherDoublons($demande->getTitre(), $demandeRepository);
+            
+            // Si des doublons sont trouvés, afficher une alerte
+            if (!empty($doublons) && !$request->get('confirmer_soumission')) {
+                $this->addFlash('warning', 'Des demandes similaires ont été trouvées. Vérifiez ci-dessous si votre demande n\'existe pas déjà.');
+                
+                return $this->render('demande/DemandeForm.html.twig', [
+                    'form' => $form->createView(),
+                    'doublons' => $doublons,
+                    'demande' => $demande
+                ]);
+            }
+            
             // Gestion de l'upload d'image
             $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {
@@ -43,14 +52,12 @@ class DemandeController extends AbstractController
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
 
                 try {
-                    // S'assurer que le dossier existe
-                    $uploadsDirectory = $this->getParameter('kernel.project_dir') . '/public/uploads/images';
-                    if (!is_dir($uploadsDirectory)) {
-                        mkdir($uploadsDirectory, 0755, true);
-                    }
+                    $imageFile->move(
+                        $this->getParameter('images_directory'), // À définir dans services.yaml
+                        $newFilename
+                    );
                     
-                    $imageFile->move($uploadsDirectory, $newFilename);
-                    
+                    // Stocker le nom du fichier dans les liens sources ou créer un champ dédié
                     $liensSources = $demande->getLiensSources();
                     $liensSources .= ($liensSources ? "\n" : '') . "Image: " . $newFilename;
                     $demande->setLiensSources($liensSources);
@@ -65,10 +72,12 @@ class DemandeController extends AbstractController
             $demande->setStatut('en_attente');
             $demande->setNbReponses(0);
             
-            // Récupérer l'utilisateur connecté
-            $user = $this->getUser();
-            if ($user instanceof User) {
-                $demande->setAuteur($user);
+            // SOLUTION TEMPORAIRE : prendre le premier utilisateur en base
+            $premierUser = $entityManager->getRepository(User::class)->findOneBy([]);
+            if ($premierUser) {
+                $demande->setAuteur($premierUser);
+            } else {
+                throw new \Exception('Aucun utilisateur en base pour assigner la demande');
             }
             
             $entityManager->persist($demande);
@@ -76,11 +85,15 @@ class DemandeController extends AbstractController
             
             $this->addFlash('success', 'Votre demande de fact-checking a été soumise avec succès !');
             
+            //return $this->redirectToRoute('app_home', ['id' => $demande->getId()]);
             return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
+
         }
         
-        return $this->render('demande/nouvelle.html.twig', [
-            'form' => $form->createView()
+        return $this->render('demande/DemandeForm.html.twig', [
+            'form' => $form->createView(),
+            'doublons' => [],
+            'demande' => null
         ]);
     }
     
@@ -90,5 +103,43 @@ class DemandeController extends AbstractController
         return $this->render('demande/detail.html.twig', [
             'demande' => $demande
         ]);
+    }
+    
+    #[Route('/liste', name: 'app_demande_liste')]
+    public function liste(DemandeRepository $demandeRepository, Request $request): Response
+    {
+        $page = $request->query->getInt('page', 1);
+        $limit = 20; // 20 éléments par page comme spécifié dans le cahier des charges
+        
+        $demandes = $demandeRepository->findBy(
+            [],
+            ['dateCreation' => 'DESC'],
+            $limit,
+            ($page - 1) * $limit
+        );
+        
+        return $this->render('demande/liste.html.twig', [
+            'demandes' => $demandes,
+            'page' => $page
+        ]);
+    }
+    
+    /**
+     * Recherche des doublons potentiels basés sur les mots-clés du titre
+     */
+    private function rechercherDoublons(string $titre, DemandeRepository $demandeRepository): array
+    {
+        // Extraire les mots-clés du titre (mots de plus de 3 caractères)
+        $mots = array_filter(
+            explode(' ', strtolower($titre)), 
+            fn($mot) => strlen(trim($mot, '.,!?;:')) > 3
+        );
+        
+        if (empty($mots)) {
+            return [];
+        }
+        
+        // Rechercher des demandes contenant ces mots-clés
+        return $demandeRepository->rechercherParMotsCles($mots, 5); // Limite à 5 résultats
     }
 }

@@ -1,0 +1,168 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profil de {{ user.prenom ~ ' ' ~ user.nom ?: user.email }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/profil.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="profil-container">
+    <div class="profil-sidebar">
+        <div class="profil-card">
+            <div class="profil-avatar">
+                <div class="avatar-circle">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+            
+            <h2 class="profil-nom">{{ user.prenom ~ ' ' ~ user.nom ?: 'Utilisateur' }}</h2>
+            
+            <div class="profil-badge">
+                <i class="fas fa-star"></i>
+                {% if user.isJournaliste %}
+                    Journaliste accrédité
+                {% elseif user.isContributeur %}
+                    Contributeur
+                {% else %}
+                    Utilisateur
+                {% endif %}
+            </div>
+            
+            <div class="profil-bio">
+                {% if user.isJournaliste %}
+                    Journaliste accrédité passionné de vérification des faits.
+                {% else %}
+                    Utilisateur passionné d'actualité et de vérification des faits.
+                {% endif %}
+                Membre depuis {{ user.dateInscription ? user.dateInscription|date('d/m/Y') : 'date inconnue' }}.
+            </div>
+            
+            <div class="profil-stats">
+                <div class="stat-item">
+                    <div class="stat-number">{{ user.scoreReputation ?? 0 }}%</div>
+                    <div class="stat-label">Score de réputation</div>
+                </div>
+            </div>
+            
+            <div class="profil-metrics">
+                <div class="metric">
+                    <div class="metric-number">0</div>
+                    <div class="metric-label">Vérifications</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-number">0</div>
+                    <div class="metric-label">Upvotes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profil-content">
+        <div class="profil-header">
+            <div class="onglets">
+                <a href="{{ path('app_profil', {id: user.id, onglet: 'tout'}) }}" 
+                   class="onglet {{ onglet == 'tout' ? 'active' : '' }}">
+                    Tout
+                </a>
+                <a href="{{ path('app_profil', {id: user.id, onglet: 'verifications'}) }}" 
+                   class="onglet {{ onglet == 'verifications' ? 'active' : '' }}">
+                    Vérifications
+                </a>
+                <a href="{{ path('app_profil', {id: user.id, onglet: 'demandes'}) }}" 
+                   class="onglet {{ onglet == 'demandes' ? 'active' : '' }}">
+                    Demandes
+                </a>
+            </div>
+        </div>
+        
+        <div class="profil-feed">
+            {% if items is empty %}
+                <div class="empty-state">
+                    <p>Aucun contenu à afficher pour le moment.</p>
+                </div>
+            {% else %}
+                {% for item in items %}
+                    {% if item.titre is defined %}
+                        {# C'est une demande #}
+                        <div class="feed-item demande-item">
+                            <div class="item-header">
+                                <span class="item-badge 
+                                    {% if item.statut == 'verifie' %}badge-vrai
+                                    {% elseif item.statut == 'faux' %}badge-faux
+                                    {% else %}badge-attente{% endif %}">
+                                    {% if item.statut == 'verifie' %}VRAI
+                                    {% elseif item.statut == 'faux' %}FAUX
+                                    {% else %}EN ATTENTE{% endif %}
+                                </span>
+                                <span class="item-meta">
+                                    {{ item.dateCreation|date('d/m/Y H:i') }} • {{ item.categorie ? item.categorie.nom : 'Sans catégorie' }}
+                                </span>
+                            </div>
+                            
+                            <h3 class="item-title">{{ item.titre }}</h3>
+                            
+                            <div class="item-content">
+                                {{ item.description|length > 150 ? item.description|slice(0, 150) ~ '...' : item.description }}
+                            </div>
+                            
+                            <div class="item-footer">
+                                <span class="item-author">
+                                    <i class="fas fa-user"></i>
+                                    {{ item.auteur.prenom ~ ' ' ~ item.auteur.nom ?: item.auteur.email }}
+                                </span>
+                                <span class="item-responses">
+                                    <i class="fas fa-comment"></i>
+                                    {{ item.nbReponses }} réponses
+                                </span>
+                            </div>
+                        </div>
+                    {% else %}
+                        {# C'est une réponse #}
+                        <div class="feed-item reponse-item">
+                            <div class="item-header">
+                                <span class="item-badge badge-reponse">
+                                    RÉPONSE
+                                </span>
+                                <span class="item-meta">
+                                    {{ item.dateCreation|date('d/m/Y H:i') }} • réponse
+                                </span>
+                            </div>
+                            
+                            <h3 class="item-title">Réponse à : {{ item.demande.titre }}</h3>
+                            
+                            <div class="item-content">
+                                {{ item.contenu|length > 150 ? item.contenu|slice(0, 150) ~ '...' : item.contenu }}
+                            </div>
+                            
+                            <div class="item-footer">
+                                <span class="item-author">
+                                    <i class="fas fa-user"></i>
+                                    {{ item.auteur.prenom ~ ' ' ~ item.auteur.nom ?: item.auteur.email }}
+                                </span>
+                                <span class="item-votes">
+                                    <i class="fas fa-thumbs-up"></i>
+                                    0 upvotes
+                                </span>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+        
+        <div class="profil-actions">
+            <button class="btn-add">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/profil.js') }}"></script>
+{% endblock %}

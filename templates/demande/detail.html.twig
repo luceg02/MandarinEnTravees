@@ -3,45 +3,26 @@
 {% block title %}{{ demande.titre }} - Le Mandarin en Travées{% endblock %}
 
 {% block stylesheets %}
-    <link href="{{ asset('css/homepage.css') }}" rel="stylesheet">
+    {{ parent() }}
     <style>
-        .detail-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .demande-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
-            padding: 2rem 0;
+            border-radius: 15px;
         }
         
-        .status-badge-large {
-            font-size: 1.1rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: 25px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .status-badge {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
         }
         
-        .content-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .card-header-custom {
-            background: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-            border-radius: 10px 10px 0 0;
-            padding: 1.5rem;
-        }
-        
-        .meta-info {
-            background: #f7fafc;
-            border-radius: 8px;
-            padding: 1.5rem;
+        .info-card {
+            border-left: 4px solid var(--primary-color);
+            background-color: #f8f9fa;
         }
         
         .sources-link {
-            color: #667eea;
+            color: var(--primary-color);
             text-decoration: none;
             word-break: break-all;
         }
@@ -51,370 +32,325 @@
         }
         
         .author-info {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
         }
         
-        .author-avatar {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .timeline-badge {
+            background: var(--primary-color);
+            color: white;
             border-radius: 50%;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-right: 1rem;
-        }
-        
-        .btn-action {
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-            font-weight: 500;
-            border: 2px solid #e2e8f0;
-            background: white;
-            color: #4a5568;
-            transition: all 0.2s;
-        }
-        
-        .btn-action:hover {
-            border-color: #667eea;
-            background: #667eea;
-            color: white;
-        }
-        
-        .btn-primary-custom {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            color: white;
-            font-weight: 600;
-        }
-        
-        .btn-primary-custom:hover {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-            transform: translateY(-1px);
         }
     </style>
 {% endblock %}
 
 {% block body %}
-    <!-- En-tête de la demande -->
-    <div class="detail-header">
-        <div class="container">
-            <!-- Navigation breadcrumb -->
-            <nav aria-label="breadcrumb" class="mb-3">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="{{ path('homepage') }}" class="text-white text-decoration-none">
-                            <i class="fas fa-home me-1"></i>Accueil
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item text-white-50" aria-current="page">
-                        <i class="fas fa-file-alt me-1"></i>Demande #{{ demande.id }}
-                    </li>
-                </ol>
-            </nav>
+<div class="container py-5">
+    <!-- Navigation breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_home') }}" class="text-decoration-none">
+                    <i class="fas fa-home me-1"></i>Accueil
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <i class="fas fa-file-alt me-1"></i>Détail de la demande
+            </li>
+        </ol>
+    </nav>
 
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <div class="d-flex flex-wrap gap-2 mb-3">
+    <div class="row">
+        <!-- Contenu principal -->
+        <div class="col-lg-8">
+            <!-- En-tête de la demande -->
+            <div class="demande-header p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex gap-2 flex-wrap">
                         {% if demande.statut == 'en_attente' %}
-                            <span class="status-badge-large bg-info">
+                            <span class="badge bg-info status-badge">
                                 <i class="fas fa-clock me-2"></i>En attente
                             </span>
                         {% elseif demande.statut == 'en_cours' %}
-                            <span class="status-badge-large bg-warning text-dark">
+                            <span class="badge bg-warning text-dark status-badge">
                                 <i class="fas fa-spinner me-2"></i>En cours
                             </span>
                         {% elseif demande.statut == 'verifie' %}
-                            <span class="status-badge-large bg-success">
+                            <span class="badge bg-success status-badge">
                                 <i class="fas fa-check-circle me-2"></i>Vérifié
                             </span>
                         {% elseif demande.statut == 'faux' %}
-                            <span class="status-badge-large bg-danger">
+                            <span class="badge bg-danger status-badge">
                                 <i class="fas fa-times-circle me-2"></i>Faux
                             </span>
+                        {% elseif demande.statut == 'partiellement_vrai' %}
+                            <span class="badge bg-warning status-badge">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Partiellement vrai
+                            </span>
                         {% else %}
-                            <span class="status-badge-large bg-secondary">
-                                {{ demande.statut|upper }}
+                            <span class="badge bg-secondary status-badge">
+                                <i class="fas fa-question me-2"></i>{{ demande.statut|default('Non défini') }}
                             </span>
                         {% endif %}
                         
                         {% if demande.categorie %}
-                            <span class="status-badge-large bg-light text-dark">
-                                <i class="fas fa-tag me-2"></i>{{ demande.categorie.nom|title }}
+                            <span class="badge bg-light text-dark status-badge">
+                                <i class="fas fa-tag me-2"></i>{{ demande.categorie.nom }}
                             </span>
                         {% endif %}
                     </div>
                     
-                    <h1 class="display-6 fw-bold mb-0">{{ demande.titre }}</h1>
+                    <small class="text-white-50">
+                        ID #{{ demande.id }}
+                    </small>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <div class="text-white-50">
-                        <div class="mb-1">
-                            <i class="fas fa-calendar-alt me-2"></i>
-                            {{ demande.dateCreation|date('d/m/Y à H:i') }}
-                        </div>
-                        <div>
-                            <i class="fas fa-comments me-2"></i>
-                            {{ demande.nbReponses }} contribution{{ demande.nbReponses > 1 ? 's' : '' }}
-                        </div>
+                
+                <h1 class="h2 fw-bold mb-3">{{ demande.titre }}</h1>
+                
+                <div class="d-flex justify-content-between align-items-center text-white-50">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Publié le {{ demande.dateCreation|date('d/m/Y à H:i') }}
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-comments me-2"></i>
+                        {{ demande.nbReponses }} contribution{{ demande.nbReponses > 1 ? 's' : '' }}
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="container py-4">
-        <div class="row">
-            <!-- Contenu principal -->
-            <div class="col-lg-8">
-                <!-- Description -->
-                <div class="content-card">
-                    <div class="card-header-custom">
-                        <h3 class="h5 mb-0 fw-bold">
-                            <i class="fas fa-align-left text-primary me-2"></i>
-                            Description de la demande
+            <!-- Description -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h3 class="h5 mb-0">
+                        <i class="fas fa-align-left text-primary me-2"></i>
+                        Description de la demande
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0 lh-lg">{{ demande.description|nl2br }}</p>
+                </div>
+            </div>
+
+            <!-- Sources -->
+            {% if demande.liensSources is defined and demande.liensSources %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h3 class="h5 mb-0">
+                            <i class="fas fa-link text-primary me-2"></i>
+                            Sources fournies
                         </h3>
                     </div>
-                    <div class="p-4">
-                        <div class="lh-lg">{{ demande.description|nl2br }}</div>
+                    <div class="card-body">
+                        {% set sources = demande.liensSources|split('\n') %}
+                        {% for source in sources %}
+                            {% if source|trim %}
+                                <div class="mb-2">
+                                    {% if 'http' in source %}
+                                        <i class="fas fa-external-link-alt text-muted me-2"></i>
+                                        <a href="{{ source|trim }}" target="_blank" class="sources-link">
+                                            {{ source|trim }}
+                                        </a>
+                                    {% elseif 'Image:' in source %}
+                                        <i class="fas fa-image text-muted me-2"></i>
+                                        <span class="text-muted">{{ source|trim }}</span>
+                                    {% else %}
+                                        <i class="fas fa-file-alt text-muted me-2"></i>
+                                        <span>{{ source|trim }}</span>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
+            {% endif %}
 
-                <!-- Sources -->
-                {% if demande.liensSources %}
-                    <div class="content-card">
-                        <div class="card-header-custom">
-                            <h3 class="h5 mb-0 fw-bold">
-                                <i class="fas fa-link text-primary me-2"></i>
-                                Sources fournies
-                            </h3>
-                        </div>
-                        <div class="p-4">
-                            {% set sources = demande.liensSources|split('\n') %}
-                            {% for source in sources %}
-                                {% if source|trim %}
-                                    <div class="mb-2 d-flex align-items-center">
-                                        {% if 'http' in source %}
-                                            <i class="fas fa-external-link-alt text-muted me-2"></i>
-                                            <a href="{{ source|trim }}" target="_blank" class="sources-link">
-                                                {{ source|trim }}
-                                            </a>
-                                        {% elseif 'Image:' in source %}
-                                            <i class="fas fa-image text-muted me-2"></i>
-                                            <span class="text-muted">{{ source|trim }}</span>
-                                        {% else %}
-                                            <i class="fas fa-file-alt text-muted me-2"></i>
-                                            <span>{{ source|trim }}</span>
-                                        {% endif %}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endif %}
+            <!-- Section contributions (préparation pour plus tard) -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h3 class="h5 mb-0">
+                        <i class="fas fa-comments text-primary me-2"></i>
+                        Contributions de la communauté
+                        <span class="badge bg-secondary ms-2">{{ demande.nbReponses }}</span>
+                    </h3>
+                </div>
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-comment-dots text-muted mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+                    {% if demande.nbReponses == 0 %}
+                        <h5 class="text-muted mb-3">Aucune contribution pour le moment</h5>
+                        <p class="text-muted mb-4">
+                            Soyez le premier à apporter des éléments de vérification pour cette demande !
+                        </p>
+                        <button class="btn btn-primary" onclick="alert('Fonctionnalité en cours de développement')">
+                            <i class="fas fa-plus me-2"></i>
+                            Ajouter une contribution
+                        </button>
+                    {% else %}
+                        <h5 class="text-muted mb-3">{{ demande.nbReponses }} contribution{{ demande.nbReponses > 1 ? 's' : '' }}</h5>
+                        <p class="text-muted mb-4">
+                            La communauté a apporté des éléments de vérification pour cette demande.
+                        </p>
+                        <button class="btn btn-outline-primary me-2" onclick="alert('Fonctionnalité en cours de développement')">
+                            <i class="fas fa-eye me-2"></i>
+                            Voir les contributions
+                        </button>
+                        <button class="btn btn-primary" onclick="alert('Fonctionnalité en cours de développement')">
+                            <i class="fas fa-plus me-2"></i>
+                            Ajouter ma contribution
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
 
-                <!-- Section contributions -->
-                <div class="content-card">
-                    <div class="card-header-custom">
-                        <h3 class="h5 mb-0 fw-bold">
-                            <i class="fas fa-comments text-primary me-2"></i>
-                            Contributions de la communauté
-                            <span class="badge bg-secondary ms-2">{{ demande.nbReponses }}</span>
-                        </h3>
-                    </div>
-                    <div class="text-center py-5">
-                        {% if demande.nbReponses == 0 %}
-                            <i class="fas fa-comment-dots text-muted mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
-                            <h5 class="text-muted mb-3">Aucune contribution pour le moment</h5>
-                            <p class="text-muted mb-4">
-                                Soyez le premier à apporter des éléments de vérification pour cette demande !
-                            </p>
-                            {% if app.user %}
-                                <button class="btn btn-primary-custom">
-                                    <i class="fas fa-plus me-2"></i>
-                                    Ajouter une contribution
-                                </button>
-                            {% else %}
-                                <a href="/login" class="btn btn-primary-custom">
-                                    <i class="fas fa-sign-in-alt me-2"></i>
-                                    Se connecter pour contribuer
-                                </a>
-                            {% endif %}
-                        {% else %}
-                            <h5 class="text-muted mb-3">{{ demande.nbReponses }} contribution{{ demande.nbReponses > 1 ? 's' : '' }}</h5>
-                            <p class="text-muted mb-4">
-                                La communauté a apporté des éléments de vérification pour cette demande.
-                            </p>
-                            <div class="d-flex gap-2 justify-content-center">
-                                <button class="btn btn-action">
-                                    <i class="fas fa-eye me-2"></i>
-                                    Voir les contributions
-                                </button>
-                                {% if app.user %}
-                                    <button class="btn btn-primary-custom">
-                                        <i class="fas fa-plus me-2"></i>
-                                        Ajouter ma contribution
-                                    </button>
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Informations sur l'auteur -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h4 class="h6 mb-0">
+                        <i class="fas fa-user text-primary me-2"></i>
+                        Auteur de la demande
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="author-info p-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="timeline-badge me-3">
+                                {% if demande.auteur.isJournaliste %}
+                                    <i class="fas fa-newspaper"></i>
+                                {% else %}
+                                    <i class="fas fa-user"></i>
                                 {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">
+                                    {% if demande.auteur.prenom or demande.auteur.nom %}
+                                        {{ demande.auteur.prenom }} {{ demande.auteur.nom }}
+                                    {% else %}
+                                        {{ demande.auteur.email }}
+                                    {% endif %}
+                                </h6>
+                                <small class="text-muted">
+                                    {% if demande.auteur.isJournaliste %}
+                                        <i class="fas fa-star text-warning me-1"></i>Journaliste accrédité
+                                    {% elseif demande.auteur.isContributeur %}
+                                        <i class="fas fa-users me-1"></i>Contributeur
+                                    {% else %}
+                                        <i class="fas fa-user me-1"></i>Utilisateur
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        {% if demande.auteur.scoreReputation %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Score de réputation</small>
+                                <span class="badge bg-primary">{{ demande.auteur.scoreReputation }} points</span>
                             </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
-            <!-- Sidebar -->
-            <div class="col-lg-4">
-                <!-- Informations sur l'auteur -->
-                <div class="content-card">
-                    <div class="card-header-custom">
-                        <h4 class="h6 mb-0 fw-bold">
-                            <i class="fas fa-user text-primary me-2"></i>
-                            Auteur de la demande
-                        </h4>
-                    </div>
-                    <div class="p-3">
-                        <div class="author-info">
-                            <div class="author-avatar">
-                                {% if demande.auteur.nom %}
-                                    {{ demande.auteur.prenom|first|upper }}{{ demande.auteur.nom|first|upper }}
-                                {% else %}
-                                    {{ demande.auteur.email|first|upper }}
-                                {% endif %}
-                            </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold">
-                                    {% if demande.auteur.nom and demande.auteur.prenom %}
-                                        {{ demande.auteur.prenom }} {{ demande.auteur.nom }}
-                                    {% else %}
-                                        {{ demande.auteur.email|split('@')[0] }}
-                                    {% endif %}
-                                </h6>
-                                <small class="text-muted">
-                                    {% if demande.auteur.roles is defined and 'ROLE_JOURNALISTE' in demande.auteur.roles %}
-                                        <i class="fas fa-star text-warning me-1"></i>Journaliste accrédité
-                                    {% else %}
-                                        <i class="fas fa-users me-1"></i>Contributeur
-                                    {% endif %}
-                                </small>
-                                {% if demande.auteur.scoreReputation %}
-                                    <div class="mt-1">
-                                        <small class="text-muted">
-                                            Score de réputation: 
-                                            <span class="fw-bold text-primary">{{ demande.auteur.scoreReputation }} points</span>
-                                        </small>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+            <!-- Informations de la demande -->
+            <div class="info-card p-3 mb-4">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Informations
+                </h5>
+                
+                <div class="mb-2">
+                    <strong>Statut :</strong>
+                    <span class="ms-2">
+                        {% if demande.statut == 'en_attente' %}
+                            En attente de vérification
+                        {% elseif demande.statut == 'en_cours' %}
+                            Vérification en cours
+                        {% elseif demande.statut == 'verifie' %}
+                            Information vérifiée
+                        {% elseif demande.statut == 'faux' %}
+                            Information fausse
+                        {% elseif demande.statut == 'partiellement_vrai' %}
+                            Information partiellement vraie
+                        {% else %}
+                            {{ demande.statut|default('Non défini') }}
+                        {% endif %}
+                    </span>
                 </div>
-
-                <!-- Métadonnées -->
-                <div class="meta-info">
-                    <h5 class="fw-bold mb-3">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Informations
-                    </h5>
-                    
+                
+                {% if demande.categorie %}
                     <div class="mb-2">
-                        <strong>Statut :</strong>
-                        <span class="ms-2">
-                            {% if demande.statut == 'en_attente' %}
-                                En attente de vérification
-                            {% elseif demande.statut == 'en_cours' %}
-                                Vérification en cours
-                            {% elseif demande.statut == 'verifie' %}
-                                Information vérifiée
-                            {% elseif demande.statut == 'faux' %}
-                                Information fausse
-                            {% else %}
-                                {{ demande.statut|title }}
-                            {% endif %}
-                        </span>
+                        <strong>Catégorie :</strong>
+                        <span class="ms-2">{{ demande.categorie.nom }}</span>
                     </div>
-                    
-                    {% if demande.categorie %}
-                        <div class="mb-2">
-                            <strong>Catégorie :</strong>
-                            <span class="ms-2">{{ demande.categorie.nom|title }}</span>
-                        </div>
-                    {% endif %}
-                    
-                    <div class="mb-2">
-                        <strong>Date de création :</strong>
-                        <span class="ms-2">{{ demande.dateCreation|date('d/m/Y à H:i') }}</span>
-                    </div>
-                    
-                    {% if demande.dateModification %}
-                        <div class="mb-2">
-                            <strong>Dernière modification :</strong>
-                            <span class="ms-2">{{ demande.dateModification|date('d/m/Y à H:i') }}</span>
-                        </div>
-                    {% endif %}
-                    
-                    <div>
-                        <strong>Contributions :</strong>
-                        <span class="ms-2">{{ demande.nbReponses }}</span>
-                    </div>
+                {% endif %}
+                
+                <div class="mb-2">
+                    <strong>Date de création :</strong>
+                    <span class="ms-2">{{ demande.dateCreation|date('d/m/Y à H:i') }}</span>
                 </div>
-
-                <!-- Actions -->
-                <div class="content-card">
-                    <div class="card-header-custom">
-                        <h4 class="h6 mb-0 fw-bold">
-                            <i class="fas fa-cogs text-primary me-2"></i>
-                            Actions
-                        </h4>
+                
+                {% if demande.dateModification is defined and demande.dateModification %}
+                    <div class="mb-2">
+                        <strong>Dernière modification :</strong>
+                        <span class="ms-2">{{ demande.dateModification|date('d/m/Y à H:i') }}</span>
                     </div>
-                    <div class="p-3">
-                        <div class="d-grid gap-2">
-                            {% if app.user %}
-                                <button class="btn btn-primary-custom">
-                                    <i class="fas fa-plus me-2"></i>
-                                    Contribuer
-                                </button>
-                            {% else %}
-                                <a href="/login" class="btn btn-primary-custom text-decoration-none">
-                                    <i class="fas fa-sign-in-alt me-2"></i>
-                                    Se connecter pour contribuer
-                                </a>
-                            {% endif %}
-                            
-                            <button class="btn btn-action">
-                                <i class="fas fa-share-alt me-2"></i>
-                                Partager
-                            </button>
-                            
-                            <button class="btn btn-action">
-                                <i class="fas fa-flag me-2"></i>
-                                Signaler
-                            </button>
-                        </div>
+                {% endif %}
+                
+                <div>
+                    <strong>Contributions :</strong>
+                    <span class="ms-2">{{ demande.nbReponses }}</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="h6 mb-0">
+                        <i class="fas fa-cogs text-primary me-2"></i>
+                        Actions
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="alert('Fonctionnalité en cours de développement')">
+                            <i class="fas fa-plus me-2"></i>
+                            Contribuer
+                        </button>
+                        
+                        <button class="btn btn-outline-secondary" onclick="alert('Fonctionnalité en cours de développement')">
+                            <i class="fas fa-share-alt me-2"></i>
+                            Partager
+                        </button>
+                        
+                        <button class="btn btn-outline-warning" onclick="alert('Fonctionnalité en cours de développement')">
+                            <i class="fas fa-flag me-2"></i>
+                            Signaler
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Bouton retour -->
-        <div class="text-center mt-4">
-            <a href="{{ path('homepage') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>
-                Retour à la liste des demandes
-            </a>
-        </div>
     </div>
+
+    <!-- Bouton retour -->
+    <div class="text-center mt-5">
+        <a href="{{ path('app_home') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Retour à la liste des demandes
+        </a>
+    </div>
+</div>
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script>
         // Copier l'URL dans le presse-papier pour le partage
         function partagerDemande() {
@@ -422,15 +358,5 @@
                 alert('Lien copié dans le presse-papier !');
             });
         }
-        
-        // Attacher l'événement aux boutons
-        document.addEventListener('DOMContentLoaded', function() {
-            const shareButtons = document.querySelectorAll('button:contains("Partager")');
-            shareButtons.forEach(button => {
-                if (button.textContent.includes('Partager')) {
-                    button.addEventListener('click', partagerDemande);
-                }
-            });
-        });
     </script>
 {% endblock %}

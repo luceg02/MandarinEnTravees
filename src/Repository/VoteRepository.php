@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Vote;
+use App\Entity\User;
+use App\Entity\Reponse;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +18,61 @@ class VoteRepository extends ServiceEntityRepository
         parent::__construct($registry, Vote::class);
     }
 
-    //    /**
-    //     * @return Vote[] Returns an array of Vote objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('v.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Trouve un vote spécifique d'un utilisateur pour une réponse
+     */
+    public function findUserVoteForReponse(User $user, Reponse $reponse): ?Vote
+    {
+        return $this->createQueryBuilder('v')
+            ->andWhere('v.user = :user')
+            ->andWhere('v.reponse = :reponse')
+            ->setParameter('user', $user)
+            ->setParameter('reponse', $reponse)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Vote
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Compte les upvotes reçus par un utilisateur
+     */
+    public function countUpvotesForUser(User $user): int
+    {
+        return $this->createQueryBuilder('v')
+            ->select('COUNT(v.id)')
+            ->leftJoin('v.reponse', 'r')
+            ->andWhere('r.auteur = :user')
+            ->andWhere('v.type = :upvote')
+            ->setParameter('user', $user)
+            ->setParameter('upvote', 'upvote')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Compte les downvotes reçus par un utilisateur
+     */
+    public function countDownvotesForUser(User $user): int
+    {
+        return $this->createQueryBuilder('v')
+            ->select('COUNT(v.id)')
+            ->leftJoin('v.reponse', 'r')
+            ->andWhere('r.auteur = :user')
+            ->andWhere('v.type = :downvote')
+            ->setParameter('user', $user)
+            ->setParameter('downvote', 'downvote')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Calcule le score de réputation d'un utilisateur
+     */
+    public function calculateReputationScore(User $user): int
+    {
+        $upvotes = $this->countUpvotesForUser($user);
+        $downvotes = $this->countDownvotesForUser($user);
+        
+        // Calcul simple : upvotes * 10 - downvotes * 2
+        return ($upvotes * 10) - ($downvotes * 2);
+    }
 }
