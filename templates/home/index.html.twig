@@ -13,7 +13,14 @@
         <div class="container">
             <h1 class="hero-title">Combattons les Fake News ensemble</h1>
             <p class="hero-subtitle">Rejoignez la communauté la plus active de fact-checkers et gagnez en réputation en défendant la vérité</p>
-            <a href="{{ path('app_demande_nouvelle') }}" class="cta-button">Soumettre une vérification</a>
+            {% if app.user %}
+                <a href="{{ path('app_demande_new') }}" class="cta-button">Soumettre une vérification</a>
+            {% else %}
+                <p style="color: white; font-size: 1.1rem; margin-top: 1.5rem;">
+                    <a href="{{ path('app_login') }}" style="color: #ffd700; text-decoration: underline;">Connectez-vous</a> 
+                    pour soumettre une demande de fact-checking
+                </p>
+            {% endif %}
         </div>
     </section>
 
@@ -204,10 +211,18 @@
                                             Soyez le premier à soumettre une demande de fact-checking ! 
                                             Votre contribution aidera la communauté à lutter contre la désinformation.
                                         </p>
-                                        <a href="{{ path('app_demande_nouvelle') }}" class="btn btn-primary btn-lg">
-                                            <i class="fas fa-plus me-2"></i>
-                                            Créer la première demande
-                                        </a>
+
+                                        {% if app.user %}
+                                            <a href="{{ path('app_demande_new') }}" class="btn btn-primary btn-lg">
+                                                <i class="fas fa-plus me-2"></i>
+                                                Créer la première demande
+                                            </a>
+                                        {% else %}
+                                            <p class="text-muted" style="font-size: 1.1rem; margin-top: 1.5rem;">
+                                                <a href="{{ path('app_login') }}" style="color: #007bff; text-decoration: underline;">Connectez-vous</a> 
+                                                pour soumettre une demande de fact-checking
+                                            </p>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

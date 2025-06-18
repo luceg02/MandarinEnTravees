@@ -13,17 +13,25 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/demande')]
 class DemandeController extends AbstractController
 {
-    #[Route('/nouvelle', name: 'app_demande_nouvelle')]
-    public function nouvelle(
+    #[Route('/new', name: 'app_demande_new')]
+    #[IsGranted('ROLE_USER')] // Seuls les utilisateurs connectés peuvent accéder
+    public function new(
         Request $request, 
         EntityManagerInterface $entityManager,
         SluggerInterface $slugger,
         DemandeRepository $demandeRepository
     ): Response {
+        // Vérification supplémentaire (optionnelle mais recommandée)
+        if (!$this->getUser()) {
+            $this->addFlash('error', 'Vous devez être connecté pour créer une demande.');
+            return $this->redirectToRoute('app_login');
+        }
+
         $demande = new Demande();
         $form = $this->createForm(DemandeForm::class, $demande);
         
@@ -72,22 +80,15 @@ class DemandeController extends AbstractController
             $demande->setStatut('en_attente');
             $demande->setNbReponses(0);
             
-            // SOLUTION TEMPORAIRE : prendre le premier utilisateur en base
-            $premierUser = $entityManager->getRepository(User::class)->findOneBy([]);
-            if ($premierUser) {
-                $demande->setAuteur($premierUser);
-            } else {
-                throw new \Exception('Aucun utilisateur en base pour assigner la demande');
-            }
+            // CORRECTION : Utiliser l'utilisateur connecté
+            $demande->setAuteur($this->getUser());
             
             $entityManager->persist($demande);
             $entityManager->flush();
             
             $this->addFlash('success', 'Votre demande de fact-checking a été soumise avec succès !');
             
-            //return $this->redirectToRoute('app_home', ['id' => $demande->getId()]);
             return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
-
         }
         
         return $this->render('demande/DemandeForm.html.twig', [
