@@ -46,6 +46,67 @@
             align-items: center;
             justify-content: center;
         }
+        
+        /* Styles pour les commentaires */
+        .comment-card {
+            transition: all 0.3s ease;
+            border-left: 3px solid #007bff;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        }
+        
+        .comment-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .comment-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+        }
+        
+        .comment-form {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .comment-form:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.1);
+        }
+        
+        .pagination-custom {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .vote-btn {
+            font-size: 0.85rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .vote-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .no-comments {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 15px;
+            border: 2px dashed #dee2e6;
+        }
     </style>
 {% endblock %}
 
@@ -157,8 +218,15 @@
                                             {{ source|trim }}
                                         </a>
                                     {% elseif 'Image:' in source %}
-                                        <i class="fas fa-image text-muted me-2"></i>
-                                        <span class="text-muted">{{ source|trim }}</span>
+                                    <div class="uploaded-image">
+                                        <i class="fas fa-image text-info me-1" style="font-size: 0.8rem;"></i>
+                                        <span class="small text-muted d-block mb-2">{{ source|trim }}</span>
+                                        {% set imageName = source|replace({'Image: ': ''}) %}
+                                        <img src="{{ asset('uploads/images/' ~ imageName|trim) }}" 
+                                            alt="Image partagée" 
+                                            class="img-fluid rounded shadow-sm" 
+                                            style="max-width: 300px; max-height: 200px; object-fit: cover;">
+                                    </div>
                                     {% else %}
                                         <i class="fas fa-file-alt text-muted me-2"></i>
                                         <span>{{ source|trim }}</span>
@@ -170,42 +238,222 @@
                 </div>
             {% endif %}
 
-            <!-- Section contributions (préparation pour plus tard) -->
-            <div class="card shadow-sm">
+            <!-- Section contributions améliorée -->
+            <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
-                    <h3 class="h5 mb-0">
-                        <i class="fas fa-comments text-primary me-2"></i>
-                        Contributions de la communauté
-                        <span class="badge bg-secondary ms-2">{{ demande.nbReponses }}</span>
-                    </h3>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="h5 mb-0">
+                            <i class="fas fa-comments text-primary me-2"></i>
+                            Contributions de la communauté
+                            <span class="badge bg-secondary ms-2">{{ demande.nbReponses }}</span>
+                        </h3>
+                        {% if demande.reponses|length > 0 %}
+                            <small class="text-muted">
+                                <i class="fas fa-sort-amount-down me-1"></i>
+                                Du plus récent au plus ancien
+                            </small>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-comment-dots text-muted mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
-                    {% if demande.nbReponses == 0 %}
-                        <h5 class="text-muted mb-3">Aucune contribution pour le moment</h5>
-                        <p class="text-muted mb-4">
-                            Soyez le premier à apporter des éléments de vérification pour cette demande !
-                        </p>
-                        <button class="btn btn-primary" onclick="alert('Fonctionnalité en cours de développement')">
-                            <i class="fas fa-plus me-2"></i>
-                            Ajouter une contribution
-                        </button>
+                <div class="card-body">
+                    {% if demande.reponses|length > 0 %}
+                        <!-- Liste des commentaires -->
+                        {% for reponse in demande.reponses %}
+                            <div class="comment-card p-4 mb-4 rounded border">
+                                <!-- En-tête du commentaire -->
+                                <div class="d-flex align-items-start mb-3">
+                                    <div class="comment-avatar me-3">
+                                        {% if reponse.auteur.isJournaliste is defined and reponse.auteur.isJournaliste %}
+                                            <i class="fas fa-newspaper"></i>
+                                        {% else %}
+                                            <i class="fas fa-user"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="mb-1 fw-bold text-dark">
+                                                    {% if reponse.auteur.prenom or reponse.auteur.nom %}
+                                                        {{ reponse.auteur.prenom }} {{ reponse.auteur.nom }}
+                                                    {% else %}
+                                                        {{ reponse.auteur.email|split('@')[0] }}
+                                                    {% endif %}
+                                                </h6>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <small class="text-muted">
+                                                        {% if reponse.auteur.isJournaliste is defined and reponse.auteur.isJournaliste %}
+                                                            <i class="fas fa-star text-warning me-1"></i>Journaliste accrédité
+                                                        {% else %}
+                                                            <i class="fas fa-users me-1"></i>Contributeur
+                                                        {% endif %}
+                                                    </small>
+                                                    <span class="text-muted">•</span>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock me-1"></i>
+                                                        {{ reponse.dateCreation|date('d/m/Y à H:i') }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Contenu du commentaire -->
+                                        <div class="comment-content mb-3">
+                                            <p class="mb-0 lh-lg text-dark">{{ reponse.contenu|nl2br }}</p>
+                                        </div>
+                                        
+                                        <!-- Sources si présentes -->
+                                        {% if reponse.sources %}
+                                            <div class="sources-section mb-3 p-3 bg-light rounded border">
+                                                <small class="text-muted fw-bold d-block mb-2">
+                                                    <i class="fas fa-link me-1"></i>Sources référencées :
+                                                </small>
+                                                {% set sources = reponse.sources|split('\n') %}
+                                                {% for source in sources %}
+                                                    {% if source|trim %}
+                                                        <div class="source-item mb-1">
+                                                            {% if 'http' in source %}
+                                                                <i class="fas fa-external-link-alt text-primary me-1" style="font-size: 0.8rem;"></i>
+                                                                <a href="{{ source|trim }}" target="_blank" class="text-primary text-decoration-none small">
+                                                                    {{ source|trim }}
+                                                                </a>
+                                                            {% elseif 'Image:' in source %}
+                                                            <div class="uploaded-image">
+                                                                <i class="fas fa-image text-info me-1" style="font-size: 0.8rem;"></i>
+                                                                <span class="small text-muted d-block mb-2">{{ source|trim }}</span>
+                                                                {% set imageName = source|replace({'Image: ': ''}) %}
+                                                                <img src="{{ asset('uploads/images/' ~ imageName|trim) }}" 
+                                                                    alt="Image partagée" 
+                                                                    class="img-fluid rounded shadow-sm" 
+                                                                    style="max-width: 300px; max-height: 200px; object-fit: cover;">
+                                                            </div>
+                                                            {% else %}
+                                                                <i class="fas fa-file-alt text-secondary me-1" style="font-size: 0.8rem;"></i>
+                                                                <span class="small">{{ source|trim }}</span>
+                                                            {% endif %}
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <!-- Actions du commentaire -->
+                                        <div class="comment-actions d-flex justify-content-between align-items-center">
+                                            <div class="vote-buttons">
+                                                <button class="btn btn-outline-success vote-btn me-2" onclick="alert('Fonctionnalité votes en cours de développement')">
+                                                    <i class="fas fa-thumbs-up me-1"></i>
+                                                    Utile
+                                                    <span class="badge bg-success ms-1">{{ reponse.nbVotesPositifs ?? 0 }}</span>
+                                                </button>
+                                                <button class="btn btn-outline-secondary vote-btn me-2" onclick="alert('Fonctionnalité votes en cours de développement')">
+                                                    <i class="fas fa-thumbs-down me-1"></i>
+                                                    Pas utile
+                                                </button>
+                                            </div>
+                                            <div class="other-actions">
+                                                <button class="btn btn-outline-warning vote-btn" onclick="alert('Fonctionnalité signalement en cours de développement')">
+                                                    <i class="fas fa-flag me-1"></i>
+                                                    Signaler
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Pagination (à implémenter côté contrôleur) -->
+                        {% if total_pages is defined and total_pages > 1 %}
+                            <div class="pagination-custom text-center">
+                                <nav aria-label="Navigation des commentaires">
+                                    <ul class="pagination justify-content-center mb-0">
+                                        {% if current_page > 1 %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ path('app_demande_detail', {'id': demande.id, 'page': current_page - 1}) }}">
+                                                    <i class="fas fa-chevron-left"></i> Précédent
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        {% for page in 1..total_pages %}
+                                            <li class="page-item {{ page == current_page ? 'active' : '' }}">
+                                                <a class="page-link" href="{{ path('app_demande_detail', {'id': demande.id, 'page': page}) }}">
+                                                    {{ page }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                        
+                                        {% if current_page < total_pages %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ path('app_demande_detail', {'id': demande.id, 'page': current_page + 1}) }}">
+                                                    Suivant <i class="fas fa-chevron-right"></i>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+                        {% endif %}
+                        
                     {% else %}
-                        <h5 class="text-muted mb-3">{{ demande.nbReponses }} contribution{{ demande.nbReponses > 1 ? 's' : '' }}</h5>
-                        <p class="text-muted mb-4">
-                            La communauté a apporté des éléments de vérification pour cette demande.
-                        </p>
-                        <button class="btn btn-outline-primary me-2" onclick="alert('Fonctionnalité en cours de développement')">
-                            <i class="fas fa-eye me-2"></i>
-                            Voir les contributions
-                        </button>
-                        <button class="btn btn-primary" onclick="alert('Fonctionnalité en cours de développement')">
-                            <i class="fas fa-plus me-2"></i>
-                            Ajouter ma contribution
-                        </button>
+                        <!-- Message quand aucun commentaire -->
+                        <div class="no-comments text-center py-5">
+                            <i class="fas fa-comment-dots text-muted mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+                            <h5 class="text-muted mb-3">Aucune contribution pour le moment</h5>
+                            <p class="text-muted mb-0">
+                                Soyez le premier à apporter des éléments de vérification pour cette demande !
+                            </p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
+
+            <!-- Formulaire de contribution (utilisateurs connectés uniquement) -->
+            {% if app.user and form is defined and form %}
+                <div class="comment-form p-4 mb-4">
+                    <h4 class="h5 mb-4">
+                        <i class="fas fa-edit text-primary me-2"></i>
+                        Ajouter votre contribution
+                    </h4>
+                    
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': true}}) }}
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                {{ form_row(form.contenu) }}
+                            </div>
+                            <div class="col-12 mb-3">
+                                {{ form_row(form.sources) }}
+                            </div>
+                            {% if form.imageFile is defined %}
+                                <div class="col-12 mb-3">
+                                    {{ form_row(form.imageFile) }}
+                                </div>
+                            {% endif %}
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Votre contribution sera visible par tous les utilisateurs
+                                    </small>
+                                    {{ form_row(form.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                                </div>
+                            </div>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            {% elseif not app.user %}
+                <!-- Message pour utilisateurs non connectés -->
+                <div class="comment-form text-center py-5">
+                    <i class="fas fa-sign-in-alt text-muted mb-3" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                    <h5 class="text-muted mb-3">Contribuer à cette demande</h5>
+                    <p class="text-muted mb-4">
+                        Connectez-vous pour apporter votre expertise et aider à vérifier cette information
+                    </p>
+                    <a href="{{ path('app_login') }}" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Se connecter pour contribuer
+                    </a>
+                </div>
+            {% endif %}
         </div>
 
         <!-- Sidebar -->
@@ -222,7 +470,7 @@
                     <div class="author-info p-3">
                         <div class="d-flex align-items-center mb-2">
                             <div class="timeline-badge me-3">
-                                {% if demande.auteur.isJournaliste %}
+                                {% if demande.auteur.isJournaliste is defined and demande.auteur.isJournaliste %}
                                     <i class="fas fa-newspaper"></i>
                                 {% else %}
                                     <i class="fas fa-user"></i>
@@ -233,13 +481,13 @@
                                     {% if demande.auteur.prenom or demande.auteur.nom %}
                                         {{ demande.auteur.prenom }} {{ demande.auteur.nom }}
                                     {% else %}
-                                        {{ demande.auteur.email }}
+                                        {{ demande.auteur.email|split('@')[0] }}
                                     {% endif %}
                                 </h6>
                                 <small class="text-muted">
-                                    {% if demande.auteur.isJournaliste %}
+                                    {% if demande.auteur.isJournaliste is defined and demande.auteur.isJournaliste %}
                                         <i class="fas fa-star text-warning me-1"></i>Journaliste accrédité
-                                    {% elseif demande.auteur.isContributeur %}
+                                    {% elseif demande.auteur.isContributeur is defined and demande.auteur.isContributeur %}
                                         <i class="fas fa-users me-1"></i>Contributeur
                                     {% else %}
                                         <i class="fas fa-user me-1"></i>Utilisateur
@@ -248,7 +496,7 @@
                             </div>
                         </div>
                         
-                        {% if demande.auteur.scoreReputation %}
+                        {% if demande.auteur.scoreReputation is defined and demande.auteur.scoreReputation %}
                             <div class="d-flex justify-content-between align-items-center">
                                 <small class="text-muted">Score de réputation</small>
                                 <span class="badge bg-primary">{{ demande.auteur.scoreReputation }} points</span>
@@ -319,12 +567,19 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <button class="btn btn-primary" onclick="alert('Fonctionnalité en cours de développement')">
-                            <i class="fas fa-plus me-2"></i>
-                            Contribuer
-                        </button>
+                        {% if app.user %}
+                            <a href="#comment-form" class="btn btn-primary scroll-to-form">
+                                <i class="fas fa-plus me-2"></i>
+                                Contribuer
+                            </a>
+                        {% else %}
+                            <a href="{{ path('app_login') }}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Se connecter pour contribuer
+                            </a>
+                        {% endif %}
                         
-                        <button class="btn btn-outline-secondary" onclick="alert('Fonctionnalité en cours de développement')">
+                        <button class="btn btn-outline-secondary" onclick="partagerDemande()">
                             <i class="fas fa-share-alt me-2"></i>
                             Partager
                         </button>
@@ -358,5 +613,22 @@
                 alert('Lien copié dans le presse-papier !');
             });
         }
+        
+        // Scroll vers le formulaire quand on clique sur "Contribuer"
+        document.addEventListener('DOMContentLoaded', function() {
+            const liens = document.querySelectorAll('.scroll-to-form');
+            liens.forEach(function(lien) {
+                lien.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const form = document.querySelector('.comment-form');
+                    if (form) {
+                        form.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
     </script>
 {% endblock %}

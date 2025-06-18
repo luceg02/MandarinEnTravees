@@ -53,7 +53,7 @@
                                             <div class="card-body p-4">
                                                 <div class="row align-items-center">
                                                     <!-- Contenu principal -->
-                                                    <div class="col-md-8">
+                                                    <div class="col-md-9">
                                                         <div class="d-flex justify-content-between align-items-start mb-3">
                                                             <div class="d-flex gap-2 align-items-center">
                                                                 {% if demande.statut == 'en_attente' %}
@@ -71,7 +71,7 @@
                                                                 {% endif %}
                                                                 
                                                                 {% if demande.categorie %}
-                                                                    <span class="badge bg-secondary">{{ demande.categorie }}</span>
+                                                                    <span class="badge bg-secondary">{{ demande.categorie.nom }}</span>
                                                                 {% endif %}
                                                             </div>
                                                             
@@ -105,6 +105,38 @@
                                                                 </small>
                                                             </div>
                                                         {% endif %}
+                                                    </div>
+                                                    
+                                                    <!-- Colonne droite pour le bouton et infos -->
+                                                    <div class="col-md-3 text-center">
+                                                        <div class="d-flex flex-column align-items-center h-100 justify-content-center">
+                                                            <!-- Infos complémentaires -->
+                                                            <div class="mb-3">
+                                                                <div class="text-muted small mb-1">
+                                                                    <i class="fas fa-comments me-1"></i>
+                                                                    {{ demande.nbReponses }} réponse{{ demande.nbReponses > 1 ? 's' : '' }}
+                                                                </div>
+                                                                <div class="text-muted small">
+                                                                    <i class="fas fa-user me-1"></i>
+                                                                    {% if demande.auteur %}
+                                                                        {% if demande.auteur.nom and demande.auteur.prenom %}
+                                                                            {{ demande.auteur.prenom|slice(0,1) }}. {{ demande.auteur.nom|slice(0,8) }}
+                                                                        {% else %}
+                                                                            {{ demande.auteur.email|split('@')[0]|slice(0,10) }}
+                                                                        {% endif %}
+                                                                    {% else %}
+                                                                        Utilisateur inconnu
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <!-- Bouton de détail -->
+                                                            <a href="{{ path('app_demande_detail', {'id': demande.id}) }}" 
+                                                            class="btn btn-primary btn-sm">
+                                                                <i class="fas fa-eye me-1"></i>
+                                                                Voir les détails
+                                                            </a>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
