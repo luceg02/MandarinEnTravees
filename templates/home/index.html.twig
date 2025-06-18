@@ -1,0 +1,354 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Le Mandarin en Travées{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="{{ asset('css/homepage.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+    <!-- Section héro bleue -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">Combattons les Fake News ensemble</h1>
+            <p class="hero-subtitle">Rejoignez la communauté la plus active de fact-checkers et gagnez en réputation en défendant la vérité</p>
+            <a href="{{ path('app_demande_nouvelle') }}" class="cta-button">Soumettre une vérification</a>
+        </div>
+    </section>
+
+    <!-- Contenu principal -->
+    <main class="main-content">
+        <div class="container">
+            <div class="row">
+                <!-- Colonne gauche - Fact-checks -->
+                <div class="col-lg-8">
+                    <h2 class="section-title">Derniers Fact-checks</h2>
+                    
+                    <section class="py-5 bg-light">
+                        <p class="text-muted">
+                            {% if total_demandes > 0 %}
+                                {{ total_demandes }} demande{{ total_demandes > 1 ? 's' : '' }} de vérification par notre communauté
+                                {% if total_pages > 1 %}
+                                    - Page {{ page_courante }} sur {{ total_pages }}
+                                {% endif %}
+                            {% else %}
+                                Découvrez les informations en cours de vérification par notre communauté
+                            {% endif %}
+                        </p>
+                        
+                        {% if demandes|length > 0 %}
+                            <!-- Affichage des demandes - Une par ligne -->
+                            <div class="row justify-content-center">
+                                <div class="col-lg-10">
+                                    {% for demande in demandes %}
+                                        <div class="card border-0 shadow-sm mb-4">
+                                            <div class="card-body p-4">
+                                                <div class="row align-items-center">
+                                                    <!-- Contenu principal -->
+                                                    <div class="col-md-8">
+                                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                                            <div class="d-flex gap-2 align-items-center">
+                                                                {% if demande.statut == 'en_attente' %}
+                                                                    <span class="badge bg-info">En attente</span>
+                                                                {% elseif demande.statut == 'en_cours' %}
+                                                                    <span class="badge bg-warning text-dark">En cours</span>
+                                                                {% elseif demande.statut == 'verifie' %}
+                                                                    <span class="badge bg-success">Vérifié</span>
+                                                                {% elseif demande.statut == 'faux' %}
+                                                                    <span class="badge bg-danger">Faux</span>
+                                                                {% elseif demande.statut == 'partiellement_vrai' %}
+                                                                    <span class="badge bg-warning">Partiellement vrai</span>
+                                                                {% else %}
+                                                                    <span class="badge bg-secondary">{{ demande.statut|default('Non défini') }}</span>
+                                                                {% endif %}
+                                                                
+                                                                {% if demande.categorie %}
+                                                                    <span class="badge bg-secondary">{{ demande.categorie }}</span>
+                                                                {% endif %}
+                                                            </div>
+                                                            
+                                                            <small class="text-muted">
+                                                                {% set diff = date().diff(demande.dateCreation) %}
+                                                                {% if diff.days > 0 %}
+                                                                    Il y a {{ diff.days }} jour{{ diff.days > 1 ? 's' : '' }}
+                                                                {% elseif diff.h > 0 %}
+                                                                    Il y a {{ diff.h }}h
+                                                                {% elseif diff.i > 0 %}
+                                                                    Il y a {{ diff.i }} min
+                                                                {% else %}
+                                                                    À l'instant
+                                                                {% endif %}
+                                                            </small>
+                                                        </div>
+                                                        
+                                                        <h5 class="card-title fw-bold mb-3">
+                                                            {{ demande.titre }}
+                                                        </h5>
+                                                        
+                                                        <p class="card-text text-muted mb-3">
+                                                            {{ demande.description|length > 200 ? demande.description|slice(0, 200) ~ '...' : demande.description }}
+                                                        </p>
+                                                        
+                                                        {% if demande.liensSources %}
+                                                            <div class="mb-2">
+                                                                <small class="text-muted">
+                                                                    <i class="fas fa-link me-1"></i>
+                                                                    Sources fournies
+                                                                </small>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Pagination -->
+                            {% if total_pages > 1 %}
+                                <nav aria-label="Navigation des demandes" class="mt-4">
+                                    <ul class="pagination justify-content-center">
+                                        <!-- Page précédente -->
+                                        {% if page_courante > 1 %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ path('app_home', {page: page_courante - 1}) }}">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                    Précédent
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                    Précédent
+                                                </span>
+                                            </li>
+                                        {% endif %}
+
+                                        <!-- Numéros de pages -->
+                                        {% set start_page = max(1, page_courante - 2) %}
+                                        {% set end_page = min(total_pages, page_courante + 2) %}
+                                        
+                                        {% if start_page > 1 %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ path('app_home', {page: 1}) }}">1</a>
+                                            </li>
+                                            {% if start_page > 2 %}
+                                                <li class="page-item disabled">
+                                                    <span class="page-link">...</span>
+                                                </li>
+                                            {% endif %}
+                                        {% endif %}
+
+                                        {% for page_num in start_page..end_page %}
+                                            {% if page_num == page_courante %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ page_num }}</span>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="{{ path('app_home', {page: page_num}) }}">{{ page_num }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        {% if end_page < total_pages %}
+                                            {% if end_page < total_pages - 1 %}
+                                                <li class="page-item disabled">
+                                                    <span class="page-link">...</span>
+                                                </li>
+                                            {% endif %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ path('app_home', {page: total_pages}) }}">{{ total_pages }}</a>
+                                            </li>
+                                        {% endif %}
+
+                                        <!-- Page suivante -->
+                                        {% if page_courante < total_pages %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ path('app_home', {page: page_courante + 1}) }}">
+                                                    Suivant
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">
+                                                    Suivant
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </span>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+
+                                <!-- Info pagination -->
+                                <div class="text-center mt-3">
+                                    <small class="text-muted">
+                                        Affichage de {{ ((page_courante - 1) * limite_par_page) + 1 }} à 
+                                        {{ min(page_courante * limite_par_page, total_demandes) }} 
+                                        sur {{ total_demandes }} demande{{ total_demandes > 1 ? 's' : '' }}
+                                    </small>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <!-- Affichage si aucune demande n'existe -->
+                            <div class="row justify-content-center">
+                                <div class="col-lg-6 text-center">
+                                    <div class="py-5">
+                                        <i class="fas fa-search text-muted mb-4" style="font-size: 4rem; opacity: 0.3;"></i>
+                                        <h4 class="text-muted mb-3">Aucune demande pour le moment</h4>
+                                        <p class="text-muted mb-4">
+                                            Soyez le premier à soumettre une demande de fact-checking ! 
+                                            Votre contribution aidera la communauté à lutter contre la désinformation.
+                                        </p>
+                                        <a href="{{ path('app_demande_nouvelle') }}" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-plus me-2"></i>
+                                            Créer la première demande
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </section>
+                </div>
+
+                <!-- Sidebar droite -->
+                <aside class="col-lg-4" style="padding-left: 2rem;">
+                    <!-- Top contributeurs -->
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">Top contributeurs</h3>
+                        {% if topContributeurs is defined and topContributeurs|length > 0 %}
+                            {% for contributeur in topContributeurs %}
+                                <div class="contributor-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div style="color: #4a5568; font-weight: 500; font-size: 0.9rem;">{{ contributeur.username }}</div>
+                                            <div style="color: #718096; font-size: 0.8rem;">
+                                                {% if contributeur.roles is defined and 'ROLE_JOURNALIST' in contributeur.roles %}
+                                                    Journaliste
+                                                {% else %}
+                                                    Contributeur
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="contributor-score">{{ (contributeur.scoreReputation / 1000)|number_format(1) }}K</div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <!-- Données fictives -->
+                            <div class="contributor-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div style="color: #4a5568; font-weight: 500; font-size: 0.9rem;">Pierre Martin</div>
+                                        <div style="color: #718096; font-size: 0.8rem;">Journaliste</div>
+                                    </div>
+                                    <div class="contributor-score">1.2K</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tendances (toujours fictives) -->
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">Tendances du jour</h3>
+                        <div style="padding: 0.75rem 0; border-bottom: 1px solid #f1f5f9;">
+                            <div style="color: #4a5568; font-weight: 500; font-size: 0.9rem;">Élections européennes (12 questions)</div>
+                        </div>
+                        <div style="padding: 0.75rem 0;">
+                            <div style="color: #4a5568; font-weight: 500; font-size: 0.9rem;">Inflation alimentaire (8 questions)</div>
+                        </div>
+                    </div>
+
+                    <!-- Statistiques -->
+                    <div class="sidebar-section text-center">
+                        {% if stats is defined %}
+                            <div style="margin-bottom: 2rem;">
+                                <span class="stats-number">{{ stats.totalDemandes|number_format(0, ',', '.') }}</span>
+                                <span class="stats-label">Fact-checks publiés</span>
+                            </div>
+                            <div>
+                                <span class="stats-number">{{ stats.totalUtilisateurs|number_format(0, ',', '.') }}</span>
+                                <span class="stats-label">Contributeurs actifs</span>
+                            </div>
+                        {% else %}
+                            <!-- Données fictives -->
+                            <div style="margin-bottom: 2rem;">
+                                <span class="stats-number">1,247</span>
+                                <span class="stats-label">Fact-checks publiés</span>
+                            </div>
+                            <div>
+                                <span class="stats-number">700</span>
+                                <span class="stats-label">Contributeurs actifs</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <!-- Comment ça marche - Version compacte -->
+    <section class="py-4">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2 class="h3 fw-bold text-gradient mb-2">Comment ça marche ?</h2>
+                <p class="text-muted">Un processus simple et collaboratif</p>
+            </div>
+            
+            <div class="row g-3">
+                <div class="col-md-3 col-sm-6">
+                    <div class="text-center">
+                        <div class="bg-primary text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px;">
+                            <span class="fw-bold">1</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Soumission</h6>
+                        <p class="text-muted small mb-0">
+                            Soumettez une information à vérifier
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="text-center">
+                        <div class="bg-info text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px;">
+                            <span class="fw-bold">2</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Contribution</h6>
+                        <p class="text-muted small mb-0">
+                            La communauté apporte des éléments de réponse
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="text-center">
+                        <div class="bg-warning text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px;">
+                            <span class="fw-bold">3</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Évaluation</h6>
+                        <p class="text-muted small mb-0">
+                            Validation par nos journalistes accrédités
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="text-center">
+                        <div class="bg-success text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px;">
+                            <span class="fw-bold">4</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">Publication</h6>
+                        <p class="text-muted small mb-0">
+                            Fact-check publié avec label de qualité
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

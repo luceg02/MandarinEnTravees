@@ -1,37 +1,49 @@
 <?php
-
 namespace App\Controller;
 
-use App\Repository\CategorieRepository;
+use App\Repository\DemandeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
-    #[Route('/', name: 'homepage')]
-    public function index(CategorieRepository $categorieRepository): Response
+    #[Route('/', name: 'app_home')]
+    public function index(Request $request, DemandeRepository $demandeRepository): Response
     {
-        // Récupération des catégories depuis ta BD
-        $categories = $categorieRepository->findAll();
-
-        // Données fictives temporaires pour le reste
-        $demandes = [
-            [
-                'id' => 1,
-                'titre' => 'Le gouvernement a-t-il vraiment augmenté les impôts de 15% cette année ?',
-                'description' => 'Après vérification des données officielles de Bercy...',
-                'statut' => 'vrai',
-                'categorie' => ['nom' => 'Politique'],
-                'auteur' => ['username' => 'Pierre Martin'],
-                'nbReponses' => 8,
-                'dateCreation' => new \DateTime('-2 hours')
-            ]
+        $categories = [
+            (object)['nom' => 'Politique'],
+            (object)['nom' => 'Santé'],
+            (object)['nom' => 'Économie'],
+            (object)['nom' => 'Société'],
+            (object)['nom' => 'Tech']
         ];
-
-        return $this->render('homepage.html.twig', [
+        
+        // Paramètres de pagination
+        $page = $request->query->getInt('page', 1);
+        $limit = 15; // 15 demandes par page
+        $offset = ($page - 1) * $limit;
+       
+        // Récupérer les demandes avec pagination
+        $demandes = $demandeRepository->findBy(
+            [], // critères (aucun = toutes)
+            ['dateCreation' => 'DESC'], // tri par date décroissante
+            $limit, // limite
+            $offset // décalage
+        );
+       
+        // Compter le total pour la pagination
+        $totalDemandes = $demandeRepository->count([]);
+        $totalPages = ceil($totalDemandes / $limit);
+       
+        return $this->render('home/index.html.twig', [
             'categories' => $categories,
-            'demandes' => $demandes
+            'demandes' => $demandes,
+            'page_courante' => $page,
+            'total_pages' => $totalPages,
+            'total_demandes' => $totalDemandes,
+            'limite_par_page' => $limit
         ]);
     }
 }

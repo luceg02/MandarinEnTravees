@@ -1,0 +1,280 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle demande de fact-checking - Le Mandarin en Travées{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .char-counter {
+            font-size: 0.875rem;
+            color: #6c757d;
+            text-align: right;
+        }
+        
+        .char-counter.warning {
+            color: #ffc107;
+        }
+        
+        .char-counter.danger {
+            color: #dc3545;
+        }
+        
+        .duplicate-alert {
+            border-left: 4px solid #ffc107;
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        
+        .duplicate-item {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .duplicate-item:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="form-container">
+        <!-- En-tête -->
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold text-gradient mb-3">
+                <i class="fas fa-plus-circle me-3"></i>
+                Nouvelle demande de fact-checking
+            </h1>
+            <p class="lead text-muted">
+                Soumettez une information douteuse pour qu'elle soit vérifiée par notre communauté
+            </p>
+        </div>
+
+        <!-- Alertes de doublons -->
+        {% if doublons|length > 0 %}
+            <div class="alert duplicate-alert" role="alert">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    <h5 class="mb-0">Demandes similaires trouvées</h5>
+                </div>
+                <p class="mb-3">
+                    Nous avons trouvé des demandes qui pourraient être liées à la vôtre. 
+                    Vérifiez si votre question n'a pas déjà été posée :
+                </p>
+                
+                <div class="row g-3 mb-4">
+                    {% for doublon in doublons %}
+                        <div class="col-12">
+                            <div class="duplicate-item p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="fw-bold mb-0">{{ doublon.titre }}</h6>
+                                    {% if doublon.categorie %}
+                                        <span class="badge bg-secondary">{{ doublon.categorie.nom }}</span>
+                                    {% endif %}
+                                </div>
+                                <p class="text-muted small mb-2">
+                                    {{ doublon.description|length > 100 ? doublon.description|slice(0, 100) ~ '...' : doublon.description }}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ doublon.dateCreation|date('d/m/Y') }}
+                                    </small>
+                                    <a href="{{ path('app_demande_detail', {id: doublon.id}) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>Voir cette demande
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary" onclick="window.history.back()">
+                        <i class="fas fa-arrow-left me-2"></i>Modifier ma demande
+                    </button>
+                    <button type="button" class="btn btn-warning" onclick="confirmerSoumission()">
+                        <i class="fas fa-check me-2"></i>Continuer quand même
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Formulaire -->
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                {{ form_start(form, {'attr': {'id': 'demandeForm', 'novalidate': 'novalidate'}}) }}
+                
+                <!-- Titre -->
+                <div class="mb-4">
+                    {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.titre, {'attr': {'data-min-length': '10', 'data-max-length': '255'}}) }}
+                    <div class="char-counter" id="titre-counter">0/255</div>
+                    {{ form_errors(form.titre) }}
+                    {{ form_help(form.titre) }}
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    {{ form_label(form.description, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.description, {'attr': {'data-min-length': '50', 'data-max-length': '2000'}}) }}
+                    <div class="char-counter" id="description-counter">0/2000</div>
+                    {{ form_errors(form.description) }}
+                    {{ form_help(form.description) }}
+                </div>
+
+                <!-- Liens sources -->
+                <div class="mb-4">
+                    {{ form_label(form.liensSources, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.liensSources) }}
+                    {{ form_errors(form.liensSources) }}
+                    {{ form_help(form.liensSources) }}
+                </div>
+
+                <!-- Catégorie -->
+                <div class="mb-4">
+                    {{ form_label(form.categorie, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.categorie) }}
+                    {{ form_errors(form.categorie) }}
+                    {{ form_help(form.categorie) }}
+                </div>
+
+                <!-- Image -->
+                <div class="mb-4">
+                    {{ form_label(form.imageFile, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.imageFile) }}
+                    {{ form_errors(form.imageFile) }}
+                    {{ form_help(form.imageFile) }}
+                </div>
+
+                <!-- Bouton de soumission -->
+                <div class="d-grid">
+                    {{ form_widget(form.submit) }}
+                </div>
+
+                <!-- Champ caché pour la confirmation -->
+                <input type="hidden" name="confirmer_soumission" id="confirmer_soumission" value="0">
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+        <!-- Aide -->
+        <div class="mt-4 p-4 bg-light rounded">
+            <h5 class="fw-bold mb-3">
+                <i class="fas fa-lightbulb text-warning me-2"></i>
+                Conseils pour une bonne demande
+            </h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Soyez précis dans votre titre
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Expliquez le contexte dans la description
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Fournissez des sources si possible
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Choisissez la bonne catégorie
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Ajoutez une capture d'écran si pertinente
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Vérifiez qu'elle n'existe pas déjà
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Compteur de caractères
+        function setupCharCounter(fieldId, counterId, minLength, maxLength) {
+            const field = document.getElementById(fieldId);
+            const counter = document.getElementById(counterId);
+            
+            if (field && counter) {
+                function updateCounter() {
+                    const length = field.value.length;
+                    counter.textContent = length + '/' + maxLength;
+                    
+                    counter.className = 'char-counter';
+                    if (length < minLength) {
+                        counter.classList.add('warning');
+                    } else if (length > maxLength * 0.9) {
+                        counter.classList.add('danger');
+                    }
+                }
+                
+                field.addEventListener('input', updateCounter);
+                updateCounter(); // Initial call
+            }
+        }
+        
+        // Initialiser les compteurs
+        document.addEventListener('DOMContentLoaded', function() {
+            const titreField = document.querySelector('#demande_form_titre');
+            const descriptionField = document.querySelector('#demande_form_description');
+            
+            if (titreField) {
+                setupCharCounter('demande_form_titre', 'titre-counter', 10, 255);
+            }
+            
+            if (descriptionField) {
+                setupCharCounter('demande_form_description', 'description-counter', 50, 2000);
+            }
+        });
+        
+        // Fonction pour confirmer la soumission malgré les doublons
+        function confirmerSoumission() {
+            document.getElementById('confirmer_soumission').value = '1';
+            document.getElementById('demandeForm').submit();
+        }
+        
+        // Validation côté client
+        document.getElementById('demandeForm').addEventListener('submit', function(e) {
+            const titre = document.querySelector('#demande_form_titre').value;
+            const description = document.querySelector('#demande_form_description').value;
+            
+            if (titre.length < 10) {
+                e.preventDefault();
+                alert('Le titre doit faire au moins 10 caractères.');
+                return false;
+            }
+            
+            if (description.length < 50) {
+                e.preventDefault();
+                alert('La description doit faire au moins 50 caractères.');
+                return false;
+            }
+        });
+    </script>
+{% endblock %}
