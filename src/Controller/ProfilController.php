@@ -22,13 +22,14 @@ class ProfilController extends AbstractController
     ): Response {
         $onglet = $request->query->get('onglet', 'tout');
         
-        // Récupérer les données selon l'onglet sélectionné
+        // Initialiser TOUTES les variables pour éviter les erreurs
         $demandes = [];
         $reponses = [];
         $items = [];
         
         switch ($onglet) {
             case 'demandes':
+                // Simplifier la requête pour éviter l'erreur Doctrine
                 $demandes = $demandeRepository->findBy(
                     ['auteur' => $user],
                     ['dateCreation' => 'DESC']
@@ -37,6 +38,7 @@ class ProfilController extends AbstractController
                 break;
                 
             case 'verifications':
+                // Simplifier la requête pour éviter l'erreur Doctrine
                 $reponses = $reponseRepository->findBy(
                     ['auteur' => $user],
                     ['dateCreation' => 'DESC']
@@ -45,11 +47,13 @@ class ProfilController extends AbstractController
                 break;
                 
             default: // 'tout'
+                // Simplifier les requêtes pour éviter l'erreur Doctrine
                 $demandes = $demandeRepository->findBy(
                     ['auteur' => $user],
                     ['dateCreation' => 'DESC'],
                     10
                 );
+                    
                 $reponses = $reponseRepository->findBy(
                     ['auteur' => $user],
                     ['dateCreation' => 'DESC'],
@@ -59,7 +63,7 @@ class ProfilController extends AbstractController
                 // Mélanger et trier par date
                 $items = array_merge($demandes, $reponses);
                 usort($items, function($a, $b) {
-                    return $b->get() <=> $a->getDateCreation();
+                    return $b->getDateCreation() <=> $a->getDateCreation();
                 });
                 break;
         }
@@ -67,9 +71,9 @@ class ProfilController extends AbstractController
         return $this->render('profil/index.html.twig', [
             'user' => $user,
             'onglet' => $onglet,
-            'items' => $items,
-            'demandes' => $demandes,
-            'reponses' => $reponses,
+            'items' => $items ?? [],
+            'demandes' => $demandes ?? [],
+            'reponses' => $reponses ?? [],
         ]);
     }
 

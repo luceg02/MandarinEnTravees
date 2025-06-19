@@ -1,6 +1,4 @@
-{# templates/security/login.html.twig #}
 {% extends 'base.html.twig' %}
-
 {% block title %}Connexion - Le Mandarin en Travées{% endblock %}
 
 {% block stylesheets %}
@@ -12,11 +10,7 @@
 <div class="registration-container">
     <div class="left-panel">
         <div class="logo">
-            <div class="logo-icon">🦆</div>
-            <div class="logo-text">
-                <h2>LE MANDARIN</h2>
-                <p>EN TRAVÉES</p>
-            </div>
+            <img src="{{ asset('images/logoheader_mandarin.png.jpg') }}" alt="Le Mandarin en Travées" class="logo-icon-image" style="height: 300px; width: auto;">
         </div>
         
         <h1>Rejoignez la communauté du fact-checking collaboratif et participez à la lutte contre la désinformation.</h1>
@@ -50,32 +44,26 @@
         {% if error %}
             <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
         {% endif %}
-
         {% if app.user %}
             <div class="alert alert-info">
                 Vous êtes connecté en tant que {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Se déconnecter</a>
             </div>
         {% endif %}
-
         <form method="post">
             <div class="form-group">
                 <label for="inputEmail">Email ou nom d'utilisateur</label>
                 <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
             </div>
-
             <div class="form-group">
                 <label for="inputPassword">Mot de passe</label>
                 <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
             </div>
-
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
             <div class="form-group">
                 <label>
                     <input type="checkbox" name="_remember_me"> Se souvenir de moi
                 </label>
             </div>
-
             <button class="btn-primary" type="submit">
                 Se connecter
             </button>
@@ -86,4 +74,9 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/registration.js') }}"></script>
 {% endblock %}

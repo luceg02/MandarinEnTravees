@@ -57,6 +57,14 @@
                     <div class="metric-label">Upvotes</div>
                 </div>
             </div>
+            
+            {# Bouton de déconnexion #}
+            <div class="profil-actions-sidebar">
+                <a href="{{ path('app_logout') }}" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Se déconnecter
+                </a>
+            </div>
         </div>
     </div>
     
@@ -74,6 +82,13 @@
                 <a href="{{ path('app_profil', {id: user.id, onglet: 'demandes'}) }}" 
                    class="onglet {{ onglet == 'demandes' ? 'active' : '' }}">
                     Demandes
+                </a>
+            </div>
+            
+            {# Alternative : Bouton logout dans le header #}
+            <div class="header-actions">
+                <a href="{{ path('app_logout') }}" class="btn-logout-header">
+                    <i class="fas fa-sign-out-alt"></i>
                 </a>
             </div>
         </div>
