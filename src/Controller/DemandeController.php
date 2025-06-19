@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Demande;
+use App\Entity\Reponse;
 use App\Entity\User;
 use App\Form\DemandeForm;
+use App\Form\AnswerForm;
 use App\Repository\DemandeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,17 +15,25 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/demande')]
 class DemandeController extends AbstractController
 {
-    #[Route('/nouvelle', name: 'app_demande_nouvelle')]
-    public function nouvelle(
+    #[Route('/new', name: 'app_demande_new')]
+    #[IsGranted('ROLE_USER')] // Seuls les utilisateurs connectés peuvent accéder
+    public function new(
         Request $request, 
         EntityManagerInterface $entityManager,
         SluggerInterface $slugger,
         DemandeRepository $demandeRepository
     ): Response {
+        // Vérification supplémentaire (optionnelle mais recommandée)
+        if (!$this->getUser()) {
+            $this->addFlash('error', 'Vous devez être connecté pour créer une demande.');
+            return $this->redirectToRoute('app_login');
+        }
+
         $demande = new Demande();
         $form = $this->createForm(DemandeForm::class, $demande);
         
@@ -72,22 +82,15 @@ class DemandeController extends AbstractController
             $demande->setStatut('en_attente');
             $demande->setNbReponses(0);
             
-            // SOLUTION TEMPORAIRE : prendre le premier utilisateur en base
-            $premierUser = $entityManager->getRepository(User::class)->findOneBy([]);
-            if ($premierUser) {
-                $demande->setAuteur($premierUser);
-            } else {
-                throw new \Exception('Aucun utilisateur en base pour assigner la demande');
-            }
+            // CORRECTION : Utiliser l'utilisateur connecté
+            $demande->setAuteur($this->getUser());
             
             $entityManager->persist($demande);
             $entityManager->flush();
             
             $this->addFlash('success', 'Votre demande de fact-checking a été soumise avec succès !');
             
-            //return $this->redirectToRoute('app_home', ['id' => $demande->getId()]);
             return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
-
         }
         
         return $this->render('demande/DemandeForm.html.twig', [
@@ -98,10 +101,74 @@ class DemandeController extends AbstractController
     }
     
     #[Route('/{id}', name: 'app_demande_detail', requirements: ['id' => '\d+'])]
-    public function detail(Demande $demande): Response
-    {
+    public function detail(
+        Demande $demande, 
+        Request $request, 
+        EntityManagerInterface $entityManager,
+        SluggerInterface $slugger
+    ): Response {
+        // IMPORTANT : Pas de restriction d'accès - tout le monde peut voir la page détaillée
+        
+        // Créer le formulaire de réponse SEULEMENT pour les utilisateurs connectés
+        $form = null;
+        
+        if ($this->getUser()) {
+            $reponse = new Reponse();
+            $form = $this->createForm(AnswerForm::class, $reponse);
+            $form->handleRequest($request);
+            
+            if ($form->isSubmitted() && $form->isValid()) {
+                // Gestion de l'upload d'image pour la réponse
+                $imageFile = $form->get('imageFile')->getData();
+                if ($imageFile) {
+                    $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                    $safeFilename = $slugger->slug($originalFilename);
+                    $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+                    try {
+                        $imageFile->move(
+                            $this->getParameter('images_directory'),
+                            $newFilename
+                        );
+                        
+                        $sources = $reponse->getSources();
+                        $sources .= ($sources ? "\n" : '') . "Image: " . $newFilename;
+                        $reponse->setSources($sources);
+                        
+                    } catch (FileException $e) {
+                        $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+                    }
+                }
+                
+                // Initialiser la réponse
+                $reponse->setDateCreation(new \DateTimeImmutable());
+                $reponse->setAuteur($this->getUser());
+                $reponse->setDemande($demande);
+                $reponse->setNbVotesPositifs(0);
+                $reponse->setNbVotesNegatifs(0);
+                
+                // Mettre à jour le nombre de réponses de la demande
+                $demande->setNbReponses($demande->getNbReponses() + 1);
+                $demande->setDateModification(new \DateTimeImmutable());
+                
+                // Si c'est la première réponse, changer le statut
+                if ($demande->getStatut() === 'en_attente') {
+                    $demande->setStatut('en_cours');
+                }
+                
+                $entityManager->persist($reponse);
+                $entityManager->persist($demande);
+                $entityManager->flush();
+                
+                $this->addFlash('success', 'Votre contribution a été ajoutée avec succès !');
+                
+                return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
+            }
+        }
+        
         return $this->render('demande/detail.html.twig', [
-            'demande' => $demande
+            'demande' => $demande,
+            'form' => $form?->createView()
         ]);
     }
     
