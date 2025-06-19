@@ -339,14 +339,17 @@
                                         <!-- Actions du commentaire -->
                                         <div class="comment-actions d-flex justify-content-between align-items-center">
                                             <div class="vote-buttons">
-                                                <button class="btn btn-outline-success vote-btn me-2" onclick="alert('Fonctionnalité votes en cours de développement')">
+                                                <button class="btn btn-outline-success vote-btn me-2" 
+                                                        onclick="voterReponse({{ reponse.id }}, 'utile')">
                                                     <i class="fas fa-thumbs-up me-1"></i>
                                                     Utile
-                                                    <span class="badge bg-success ms-1">{{ reponse.nbVotesPositifs ?? 0 }}</span>
+                                                    <span class="badge bg-success ms-1" id="votes-positifs-{{ reponse.id }}">{{ reponse.nbVotesPositifs ?? 0 }}</span>
                                                 </button>
-                                                <button class="btn btn-outline-secondary vote-btn me-2" onclick="alert('Fonctionnalité votes en cours de développement')">
+                                                <button class="btn btn-outline-secondary vote-btn me-2" 
+                                                        onclick="voterReponse({{ reponse.id }}, 'pas_utile')">
                                                     <i class="fas fa-thumbs-down me-1"></i>
                                                     Pas utile
+                                                    <span class="badge bg-secondary ms-1" id="votes-negatifs-{{ reponse.id }}">{{ reponse.nbVotesNegatifs ?? 0 }}</span>
                                                 </button>
                                             </div>
                                             <div class="other-actions">
@@ -630,5 +633,43 @@
                 });
             });
         });
+
+        // Fonction pour voter sur une réponse
+function voterReponse(reponseId, typeVote) {
+    {% if app.user %}
+        fetch(`/vote/reponse/${reponseId}/${typeVote}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mettre à jour les compteurs
+                document.getElementById(`votes-positifs-${reponseId}`).textContent = data.nbVotesPositifs;
+                document.getElementById(`votes-negatifs-${reponseId}`).textContent = data.nbVotesNegatifs;
+                
+                // Afficher un message de succès
+                showMessage('success', data.message);
+            } else {
+                showMessage('error', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showMessage('error', 'Erreur lors du vote');
+        });
+        {% else %}
+            alert('Vous devez être connecté pour voter');
+        {% endif %}
+    }
+
+    // Fonction pour afficher les messages
+    function showMessage(type, message) {
+        // Simple alert pour commencer
+        alert(message);
+    }
     </script>
 {% endblock %}
