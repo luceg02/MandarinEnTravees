@@ -210,7 +210,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isContributeur(): bool
     {
-        return in_array('ROLE_CONTRIBUTEUR', $this->roles);
+        return in_array('ROLE_USER', $this->roles);
     }
 
     public function isActive(): bool

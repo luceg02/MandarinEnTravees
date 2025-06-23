@@ -22,17 +22,18 @@ class RegistrationForm extends AbstractType
             ->add('userType', ChoiceType::class, [
                 'label' => 'Type d\'utilisateur',
                 'choices' => [
-                    'Contributeur' => 'contributeur',
-                    'Journaliste' => 'journaliste',
+                'Contributeur' => 'contributeur',
+                'Journaliste' => 'journaliste',
                 ],
-                'mapped' => false,
-                'expanded' => true,
-                'multiple' => false,
-                'required' => true,
-                'data' => 'contributeur',
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'Veuillez sélectionner un type d\'utilisateur.',
+                    'mapped' => false,
+                    'expanded' => false, // Changé de true à false
+                    'multiple' => false,
+                    'required' => true,
+                    'data' => 'contributeur',
+                    'attr' => ['style' => 'display: none;'], // Caché car vous utilisez les cartes
+                    'constraints' => [
+                new NotBlank([
+                'message' => 'Veuillez sélectionner un type d\'utilisateur.',
                     ]),
                 ],
             ])

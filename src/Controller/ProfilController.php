@@ -22,6 +22,10 @@ class ProfilController extends AbstractController
     ): Response {
         $onglet = $request->query->get('onglet', 'tout');
         
+        // Calculer les statistiques de l'utilisateur
+        $nbReponses = $reponseRepository->count(['auteur' => $user]);
+        $nbDemandes = $demandeRepository->count(['auteur' => $user]);
+        
         // Initialiser TOUTES les variables pour éviter les erreurs
         $demandes = [];
         $reponses = [];
@@ -53,7 +57,7 @@ class ProfilController extends AbstractController
                     ['dateCreation' => 'DESC'],
                     10
                 );
-                    
+                
                 $reponses = $reponseRepository->findBy(
                     ['auteur' => $user],
                     ['dateCreation' => 'DESC'],
@@ -74,6 +78,8 @@ class ProfilController extends AbstractController
             'items' => $items ?? [],
             'demandes' => $demandes ?? [],
             'reponses' => $reponses ?? [],
+            'nbReponses' => $nbReponses,
+            'nbDemandes' => $nbDemandes,
         ]);
     }
 

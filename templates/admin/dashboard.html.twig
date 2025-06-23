@@ -1,0 +1,449 @@
+{# templates/admin/dashboard.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Administrateur{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-header {
+            background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .notification-badge {
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #f39c12;
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #f39c12;
+            margin: 0.5rem 0;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header-custom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #ecf0f1;
+            min-width: 0;
+        }
+        
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: #34495e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .user-content {
+            flex: 1;
+            min-width: 0;
+            margin-right: 1rem;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .user-details {
+            font-size: 0.875rem;
+            color: #6c757d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .user-actions {
+            flex-shrink: 0;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-valider {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .btn-rejeter {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .signalement-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .signalement-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .signalement-number.priority-high { background: #e74c3c; }
+        .signalement-number.priority-medium { background: #f39c12; }
+        .signalement-number.priority-low { background: #3498db; }
+        
+        .signalement-tag {
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .tag-diffamation { background: #e74c3c; }
+        .tag-spam { background: #f39c12; }
+        .tag-fake { background: #9b59b6; }
+        .tag-inapproprie { background: #e74c3c; }
+        .tag-incorrecte { background: #9b59b6; }
+        .tag-harcelement { background: #e67e22; }
+        .tag-autre { background: #95a5a6; }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+        
+        .activity-icon.success { background: #27ae60; color: white; }
+        .activity-icon.info { background: #3498db; color: white; }
+        .activity-icon.warning { background: #f39c12; color: white; }
+        
+        .btn-voir-tout {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+        
+        .btn-moderation {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .user-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .user-content {
+                margin-right: 0;
+                width: 100%;
+            }
+            
+            .user-actions {
+                align-self: flex-end;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="admin-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 mb-0">Dashboard Administrateur</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Statistiques -->
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <span style="font-size: 1.5rem; margin-right: 0.5rem;">👥</span>
+                    <strong>Utilisateurs</strong>
+                </div>
+                <div class="stats-number">{{ totalUsers|number_format(0, ',', ' ') }}</div>
+            </div>
+            
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <span style="font-size: 1.5rem; margin-right: 0.5rem;">📰</span>
+                    <strong>Journalistes en attente</strong>
+                </div>
+                <div class="stats-number">{{ journalistesEnAttente|length }}</div>
+            </div>
+            
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <span style="font-size: 1.5rem; margin-right: 0.5rem;">⚠️</span>
+                    <strong>Signalements</strong>
+                </div>
+                <div class="stats-number">{{ signalements }}</div>
+            </div>
+            
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <span style="font-size: 1.5rem; margin-right: 0.5rem;">✅</span>
+                    <strong>Demandes publiées</strong>
+                </div>
+                <div class="stats-number">{{ factChecksPublies }}</div>
+            </div>
+        </div>
+        
+        <!-- Contenu principal -->
+        <div class="col-md-9">
+            <div class="row">
+                <!-- Validation journalistes -->
+                <div class="col-md-6">
+                    <div class="content-card">
+                        <div class="card-header-custom">
+                            <div class="d-flex align-items-center">
+                                <span style="font-size: 1.2rem; margin-right: 0.5rem;">🎓</span>
+                                <strong>Validation journalistes</strong>
+                            </div>
+                            <a href="{{ path('admin_journalistes_attente') }}" class="btn-voir-tout">Voir tout</a>
+                        </div>
+                        
+                        {% for journaliste in journalistesEnAttente %}
+                            <div class="user-item">
+                                <div class="user-avatar">
+                                    👤
+                                </div>
+                                <div class="user-content">
+                                    <div class="user-name">{{ journaliste.prenom }} {{ journaliste.nom }}</div>
+                                    <div class="user-details" title="{{ journaliste.email }} • Carte n°{{ journaliste.numeroCartePresse ?: 'N/A' }}">
+                                        {{ journaliste.email }} • 
+                                        Carte n°{% if journaliste.numeroCartePresse %}
+                                            {% if journaliste.numeroCartePresse|length > 8 %}
+                                                {{ journaliste.numeroCartePresse|slice(0, 8) }}...
+                                            {% else %}
+                                                {{ journaliste.numeroCartePresse }}
+                                            {% endif %}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="user-actions">
+                                    <a href="{{ path('admin_valider_journaliste', {id: journaliste.id}) }}" 
+                                       class="btn-valider" 
+                                       onclick="return confirm('Valider ce journaliste ?')">
+                                        ✓ Valider
+                                    </a>
+                                    <a href="{{ path('admin_rejeter_journaliste', {id: journaliste.id}) }}" 
+                                       class="btn-rejeter"
+                                       onclick="return confirm('Rejeter ce journaliste ?')">
+                                        ✗ Rejeter
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted py-3">
+                                Aucun journaliste en attente
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Signalements récents -->
+                <div class="col-md-6">
+                    <div class="content-card">
+                        <div class="card-header-custom">
+                            <div class="d-flex align-items-center">
+                                <span style="font-size: 1.2rem; margin-right: 0.5rem;">🚨</span>
+                                <strong>Signalements récents</strong>
+                            </div>
+                            <a href="{{ path('admin_reports') }}" class="btn-moderation">Modération</a>
+                        </div>
+                        
+                        {% for signalement in signalementsRecents %}
+                            <div class="signalement-item">
+                                <div class="signalement-number priority-{{ loop.index <= 2 ? 'high' : (loop.index <= 4 ? 'medium' : 'low') }}">
+                                    {{ loop.index }}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">
+                                        {% if signalement.typeContenu == 'demande' %}
+                                            Demande de {{ signalement.auteurContenu.prenom }} {{ signalement.auteurContenu.nom }}.
+                                        {% else %}
+                                            Réponse de {{ signalement.auteurContenu.prenom }} {{ signalement.auteurContenu.nom }}. 
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div>
+                                    {% set tagClass = 'tag-' ~ signalement.raison %}
+                                    {% set tagText = signalement.raison == 'inapproprie' ? 'Inapproprié' : 
+                                                    (signalement.raison == 'spam' ? 'Spam' : 
+                                                    (signalement.raison == 'incorrecte' ? 'Fake news' : 
+                                                    (signalement.raison == 'harcelement' ? 'Harcèlement' : 'Autre'))) %}
+                                    <span class="signalement-tag {{ tagClass }}">{{ tagText }}</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted py-3">
+                                Aucun signalement récent
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Activité récente -->
+<div class="row mt-3">
+    <div class="col-md-12">
+        <div class="content-card">
+            <div class="card-header-custom">
+                <div class="d-flex align-items-center">
+                    <span style="font-size: 1.2rem; margin-right: 0.5rem;">📊</span>
+                    <strong>Activité récente</strong>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    {% for activite in activiteRecente[:3] %}
+                        <div class="activity-item">
+                            <div class="activity-icon {{ activite.type == 'fact_check' ? 'success' : (activite.type == 'journaliste' ? 'info' : (activite.type == 'user' ? 'info' : 'warning')) }}">
+                                {% if activite.type == 'fact_check' %}✓
+                                {% elseif activite.type == 'journaliste' %}📰
+                                {% elseif activite.type == 'user' %}👤
+                                {% else %}⚠️{% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div>
+                                    {% if activite.type == 'user' %}
+                                        Nouveau utilisateur inscrit
+                                    {% elseif activite.type == 'demande' %}
+                                        Nouvelle demande reçue
+                                    {% else %}
+                                        {{ activite.message }}
+                                    {% endif %}
+                                </div>
+                                <div class="text-muted small">Il y a {{ activite.temps }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-6">
+                    {% for activite in activiteRecente[3:] %}
+                        <div class="activity-item">
+                            <div class="activity-icon {{ activite.type == 'fact_check' ? 'success' : (activite.type == 'journaliste' ? 'info' : (activite.type == 'user' ? 'info' : 'warning')) }}">
+                                {% if activite.type == 'fact_check' %}✓
+                                {% elseif activite.type == 'journaliste' %}📰
+                                {% elseif activite.type == 'user' %}👤
+                                {% else %}⚠️{% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div>
+                                    {% if activite.type == 'user' %}
+                                        Nouveau utilisateur inscrit
+                                    {% elseif activite.type == 'demande' %}
+                                        Nouvelle demande reçue
+                                    {% else %}
+                                        {{ activite.message }}
+                                    {% endif %}
+                                </div>
+                                <div class="text-muted small">Il y a {{ activite.temps }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

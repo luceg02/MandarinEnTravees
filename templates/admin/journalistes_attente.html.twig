@@ -1,0 +1,57 @@
+{# templates/admin/journalistes_attente.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Journalistes en attente de validation{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Journalistes en attente de validation</h2>
+        <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">← Retour au dashboard</a>
+    </div>
+
+    {% if journalistes is empty %}
+        <div class="alert alert-info">
+            <strong>Aucun journaliste en attente de validation.</strong>
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Email</th>
+                        <th>Carte de presse</th>
+                        <th>Date d'inscription</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for journaliste in journalistes %}
+                        <tr>
+                            <td>{{ journaliste.prenom }} {{ journaliste.nom }}</td>
+                            <td>{{ journaliste.email }}</td>
+                            <td>{{ journaliste.numeroCartePresse ?: 'Non renseigné' }}</td>
+                            <td>{{ journaliste.dateInscription ? journaliste.dateInscription|date('d/m/Y H:i') : 'Non définie' }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ path('admin_valider_journaliste', {id: journaliste.id}) }}" 
+                                       class="btn btn-sm btn-success"
+                                       onclick="return confirm('Valider ce journaliste ?')">
+                                        ✓ Valider
+                                    </a>
+                                    <a href="{{ path('admin_rejeter_journaliste', {id: journaliste.id}) }}" 
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Rejeter ce journaliste ? Il sera converti en contributeur.')">
+                                        ✗ Rejeter
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

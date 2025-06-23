@@ -1,0 +1,51 @@
+{# templates/admin/reports_historique.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Historique des signalements{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Historique des signalements</h2>
+        <div>
+            <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">← Retour</a>
+            <a href="{{ path('admin_reports') }}" class="btn btn-warning">En attente</a>
+        </div>
+    </div>
+
+    {% if reports is empty %}
+        <div class="alert alert-info">
+            <strong>Aucun signalement traité pour le moment.</strong>
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Raison</th>
+                        <th>Signalé par</th>
+                        <th>Auteur du contenu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                        <tr>
+                            <td>{{ report.dateReport|date('d/m/Y H:i') }}</td>
+                            <td>
+                                <span class="badge bg-{{ report.typeContenu == 'demande' ? 'primary' : 'secondary' }}">
+                                    {{ report.typeContenu|title }}
+                                </span>
+                            </td>
+                            <td>{{ report.raison }}</td>
+                            <td>{{ report.signalePar ? report.signalePar.email : 'Utilisateur supprimé' }}</td>
+                            <td>{{ report.auteurContenu ? report.auteurContenu.email : 'Utilisateur supprimé' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

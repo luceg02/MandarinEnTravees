@@ -1,0 +1,269 @@
+{# templates/admin/report_detail.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Centre de Modération - Détail Signalement{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .moderation-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .moderation-card {
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .signalement-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        .content-quote {
+            background: #ecf0f1;
+            border-left: 4px solid #3498db;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-style: italic;
+        }
+        
+        .user-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        
+        .content-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        
+        .score-badge {
+            background: #3498db;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .btn-action {
+            border: 1px solid #3498db;
+            background: white;
+            color: #3498db;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-action:hover {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-danger {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-warning {
+            border-color: #f39c12;
+            color: #f39c12;
+        }
+        
+        .btn-warning:hover {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .tabs {
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 2rem;
+        }
+        
+        .tab {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: #ecf0f1;
+            margin-right: 0.5rem;
+            border-radius: 8px 8px 0 0;
+            text-decoration: none;
+            color: #7f8c8d;
+        }
+        
+        .tab.active {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .admin-info {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: right;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="moderation-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <div style="width: 40px; height: 40px; background: #e74c3c; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            🛡️
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="h4 mb-0">Centre de Modération</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Contenu principal -->
+    <div class="moderation-card card">
+        <div class="card-body">
+            <div class="signalement-badge">Signalement</div>
+            
+            <h2 class="h4 mb-3">
+                {% if report.typeContenu == 'demande' %}
+                    {{ contenu ? contenu.titre : 'Contenu supprimé' }}
+                {% else %}
+                    Réponse de {{ report.auteurContenu.prenom }} {{ report.auteurContenu.nom }}
+                {% endif %}
+            </h2>
+            
+            <p class="text-muted mb-4">
+                Signalé par: {{ report.signalePar ? report.signalePar.email : 'Utilisateur supprimé' }}
+            </p>
+            
+            <p class="mb-4">
+                "{{ report.raison|title }}" - {{ report.commentaire ?: 'Aucun commentaire supplémentaire.' }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Détails du signalement -->
+    <div class="moderation-card card">
+        <div class="card-body">
+            <h3 class="h5 mb-4">Détails du signalement</h3>
+            <p class="text-muted mb-3">ID: {{ report.id }}</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="user-info">
+                        <h6>👤 Utilisateur signalé</h6>
+                        {% if report.auteurContenu %}
+                            <p class="mb-1"><strong>{{ report.auteurContenu.prenom }} {{ report.auteurContenu.nom }}</strong></p>
+                            <p class="mb-1">{{ report.auteurContenu.email }}</p>
+                            {% if report.auteurContenu.numeroCartePresse %}
+                                <p class="mb-0">{{ report.auteurContenu.numeroCartePresse }} 
+                                    <span class="score-badge">score: {{ report.auteurContenu.scoreReputation ?: 'N/A' }}/100</span>
+                                </p>
+                            {% endif %}
+                        {% else %}
+                            <p>Utilisateur supprimé</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu signalé -->
+    <div class="moderation-card card">
+        <div class="card-body">
+            <h6>📝 Contenu signalé</h6>
+            
+            {% if contenu %}
+                <div class="content-quote">
+                    {% if report.typeContenu == 'demande' %}
+                        "{{ contenu.description }}"
+                    {% else %}
+                        "{{ contenu.contenu }}"
+                    {% endif %}
+                </div>
+                
+                <p class="text-muted mb-0">
+                    Publié le {{ contenu.dateCreation|date('d/m/Y à H:i') }} • 
+                </p>
+            {% else %}
+                <div class="alert alert-warning">
+                    <strong>Contenu non disponible</strong> - Le contenu a peut-être été supprimé.
+                </div>
+            {% endif %}
+            
+            <!-- Boutons d'action -->
+            <div class="action-buttons">
+                <a href="{{ path('admin_report_action', {id: report.id, action: 'ignorer'}) }}" 
+                   class="btn-action" 
+                   onclick="return confirm('Ignorer ce signalement ?')">
+                    Ignorer le signalement
+                </a>
+                
+                <a href="{{ path('admin_report_action', {id: report.id, action: 'avertir'}) }}" 
+                   class="btn-action" 
+                   onclick="return confirm('Avertir cet utilisateur ?')">
+                    Avertir l'utilisateur
+                </a>
+                
+                <a href="{{ path('admin_report_action', {id: report.id, action: 'supprimer_contenu'}) }}" 
+                   class="btn-action btn-danger" 
+                   onclick="return confirm('Supprimer définitivement ce contenu ?')">
+                    Supprimer le contenu
+                </a>
+                
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{{ path('admin_report_action', {id: report.id, action: 'bannir_temporaire'}) }}" 
+                   class="btn-action btn-warning" 
+                   onclick="return confirm('Bannir temporairement cet utilisateur ?')">
+                    Bannir temporairement
+                </a>
+                
+                <a href="{{ path('admin_report_action', {id: report.id, action: 'bannir_definitivement'}) }}" 
+                   class="btn-action btn-danger" 
+                   onclick="return confirm('Bannir définitivement cet utilisateur ?')">
+                    Bannir définitivement
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{{ path('admin_reports') }}" class="btn btn-secondary">← Retour à la liste</a>
+    </div>
+</div>
+{% endblock %}

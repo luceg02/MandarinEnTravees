@@ -1,0 +1,40 @@
+{# templates/report/form.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Signaler un contenu{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Signaler {{ type == 'demande' ? 'une demande' : 'une réponse' }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Contenu à signaler :</strong><br>
+                        <em>{{ type == 'demande' ? contenu.titre : contenu.contenu|slice(0, 100) ~ '...' }}</em>
+                    </div>
+
+                    {{ form_start(form) }}
+                        <div class="mb-3">
+                            {{ form_row(form.raison) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_row(form.commentaire) }}
+                        </div>
+                        <div class="d-grid gap-2">
+                            {{ form_widget(form.envoyer) }}
+                        </div>
+                    {{ form_end(form) }}
+
+                    <div class="mt-3">
+                        <a href="/" class="btn btn-secondary">Annuler</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

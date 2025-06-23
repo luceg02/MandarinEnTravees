@@ -27,16 +27,11 @@
                 {% elseif user.isContributeur %}
                     Contributeur
                 {% else %}
-                    Utilisateur
+                    Admin
                 {% endif %}
             </div>
             
             <div class="profil-bio">
-                {% if user.isJournaliste %}
-                    Journaliste accrédité passionné de vérification des faits.
-                {% else %}
-                    Utilisateur passionné d'actualité et de vérification des faits.
-                {% endif %}
                 Membre depuis {{ user.dateInscription ? user.dateInscription|date('d/m/Y') : 'date inconnue' }}.
             </div>
             
@@ -49,7 +44,7 @@
             
             <div class="profil-metrics">
                 <div class="metric">
-                    <div class="metric-number">0</div>
+                    <div class="metric-number">{{ nbReponses ?? 0 }}</div>
                     <div class="metric-label">Vérifications</div>
                 </div>
                 <div class="metric">
@@ -77,20 +72,14 @@
                 </a>
                 <a href="{{ path('app_profil', {id: user.id, onglet: 'verifications'}) }}" 
                    class="onglet {{ onglet == 'verifications' ? 'active' : '' }}">
-                    Vérifications
+                    Vérifications ({{ nbReponses ?? 0 }})
                 </a>
                 <a href="{{ path('app_profil', {id: user.id, onglet: 'demandes'}) }}" 
                    class="onglet {{ onglet == 'demandes' ? 'active' : '' }}">
-                    Demandes
+                    Demandes ({{ nbDemandes ?? 0 }})
                 </a>
             </div>
-            
-            {# Alternative : Bouton logout dans le header #}
-            <div class="header-actions">
-                <a href="{{ path('app_logout') }}" class="btn-logout-header">
-                    <i class="fas fa-sign-out-alt"></i>
-                </a>
-            </div>
+
         </div>
         
         <div class="profil-feed">

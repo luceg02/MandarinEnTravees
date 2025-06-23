@@ -1,0 +1,59 @@
+{# templates/admin/users.html.twig #}
+{% extends 'base.html.twig' %}
+{% block title %}Liste des utilisateurs{% endblock %}
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Liste des utilisateurs</h2>
+        <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">← Retour</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Type compte</th>
+                    <th>Statut validation</th>
+                    <th>Date inscription</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.nom }}</td>
+                        <td>{{ user.prenom }}</td>
+                        <td>
+                            {% if user.isJournaliste %}
+                                <span class="badge bg-primary">Journaliste</span>
+                            {% elseif user.isContributeur %}
+                                <span class="badge bg-info">Contributeur</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Utilisateur</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.statutValidation %}
+                                {% if user.statutValidation == 'validé' %}
+                                    <span class="badge bg-success">{{ user.statutValidation|title }}</span>
+                                {% elseif user.statutValidation == 'en_attente' %}
+                                    <span class="badge bg-warning">En attente</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ user.statutValidation|title }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">Non défini</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.dateInscription ? user.dateInscription|date('d/m/Y') : 'Non définie' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -353,10 +353,10 @@
                                                 </button>
                                             </div>
                                             <div class="other-actions">
-                                                <button class="btn btn-outline-warning vote-btn" onclick="alert('Fonctionnalité signalement en cours de développement')">
-                                                    <i class="fas fa-flag me-1"></i>
-                                                    Signaler
-                                                </button>
+                                                {% if app.user and app.user != reponse.auteur %}
+    <a href="{{ path('report_contenu', {type: 'reponse', id: reponse.id}) }}" 
+       class="btn btn-sm btn-outline-warning">🚩 Signaler</a>
+{% endif %}
                                             </div>
                                         </div>
                                     </div>

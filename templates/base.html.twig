@@ -10,27 +10,258 @@
         <!-- FontAwesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-            <style>
-        .main-header {
-            background-color: #18273B !important;
-        }
-    </style>
-{% block stylesheets %}
-    <link href="{{ asset('css/homepage.css') }}" rel="stylesheet">
-{% endblock %}
+        <style>
+            .main-header {
+                background-color: #18273B !important;
+                padding: 15px 0;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                min-height: 120px;
+            }
+
+            .logo-container {
+                display: flex;
+                align-items: center;
+                height: 100%;
+                padding-left: 20px;
+            }
+
+            .logo-image {
+                height: 100px !important;
+                width: auto !important;
+                transition: transform 0.3s ease;
+            }
+
+            .logo-image:hover {
+                transform: scale(1.05);
+            }
+
+            /* Navigation centrale */
+            nav {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 3rem;
+                height: 100%;
+                padding: 0 30px;
+            }
+
+            .nav-link {
+                color: white !important;
+                text-decoration: none;
+                font-weight: 500;
+                font-size: 1rem;
+                padding: 12px 20px;
+                border-radius: 4px;
+                transition: all 0.3s ease;
+                white-space: nowrap;
+            }
+
+            .nav-link:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: #ffd700 !important;
+                transform: translateY(-1px);
+            }
+
+            /* Section droite */
+            .header-right {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 1.5rem;
+                height: 100%;
+                padding-right: 20px;
+            }
+
+            .search-input {
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-radius: 25px;
+                padding: 8px 16px;
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                outline: none;
+                transition: all 0.3s ease;
+                width: 200px;
+            }
+
+            .search-input::placeholder {
+                color: rgba(255, 255, 255, 0.7);
+            }
+
+            .search-input:focus {
+                border-color: #ffd700;
+                background: rgba(255, 255, 255, 0.2);
+                box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+            }
+
+            .user-icon {
+                color: white;
+                font-size: 1.8rem;
+                transition: all 0.3s ease;
+                padding: 8px;
+                border-radius: 50%;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .user-icon:hover {
+                color: #ffd700;
+                background: rgba(255, 255, 255, 0.1);
+                transform: scale(1.1);
+            }
+
+            .user-dropdown {
+                position: relative;
+            }
+
+            .user-dropdown-menu {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                background: #18273B;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 8px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+                min-width: 220px;
+                padding: 10px 0;
+                z-index: 9999;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(-10px);
+                transition: all 0.3s ease;
+                margin-top: 8px;
+            }
+
+            .user-dropdown-menu.show {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+
+            .user-dropdown-item {
+                display: block;
+                padding: 12px 20px;
+                color: white;
+                text-decoration: none;
+                font-size: 0.95rem;
+                transition: all 0.3s ease;
+                border: none;
+                background: none;
+                width: 100%;
+                text-align: left;
+                cursor: pointer;
+            }
+
+            .user-dropdown-item:hover {
+                background: rgba(255, 215, 0, 0.15);
+                color: #ffd700;
+            }
+
+            .user-dropdown-item i {
+                margin-right: 10px;
+                width: 18px;
+                text-align: center;
+                font-size: 0.9rem;
+            }
+
+            .dropdown-divider {
+                margin: 8px 0;
+                border: none;
+                border-top: 1px solid rgba(255,255,255,0.2);
+            }
+
+            .dropdown-header {
+                padding: 8px 20px 4px 20px;
+                color: #ffd700;
+                font-size: 0.8rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                display: flex;
+                align-items: center;
+                opacity: 0.9;
+            }
+
+            .dropdown-header i {
+                margin-right: 8px;
+                font-size: 0.75rem;
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                .main-header .container {
+                    padding: 0 10px;
+                }
+                
+                nav {
+                    gap: 1rem;
+                }
+                
+                .nav-link {
+                    font-size: 0.9rem;
+                    padding: 6px 10px;
+                }
+                
+                .search-input {
+                    width: 150px;
+                }
+                
+                .logo-image {
+                    height: 80px !important;
+                }
+
+                .header-right {
+                    gap: 1rem;
+                }
+            }
+
+            @media (max-width: 991px) {
+                nav {
+                    gap: 1.5rem;
+                }
+                
+                .nav-link {
+                    font-size: 0.95rem;
+                }
+            }
+
+            /* Animation d'entrée */
+            .main-header {
+                animation: slideDown 0.5s ease-out;
+            }
+
+            @keyframes slideDown {
+                from {
+                    transform: translateY(-100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+        </style>
+
+        {% block stylesheets %}
+            <link href="{{ asset('css/homepage.css') }}" rel="stylesheet">
+        {% endblock %}
     </head>
     <body>
         <!-- Header commun à toutes les pages -->
         <header class="main-header">
             <div class="container">
                 <div class="row align-items-center">
-                <div class="col-md-3">
-                    <div class="logo-container">
-                    <a href="/">
-                        <img src="{{ asset('images/logoheader_mandarin.png.jpg') }}" alt="Le Mandarin en Travées" class="logo-image" style="height: 100px; width: auto;">
-                    </a>
-                </div>
-                </div>
+                    <!-- Logo -->
+                    <div class="col-md-3">
+                        <div class="logo-container">
+                            <a href="/">
+                                <img src="{{ asset('images/logoheader_mandarin.png.jpg') }}" alt="Le Mandarin en Travées" class="logo-image">
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation centrale -->
                     <div class="col-md-6 text-center">
                         <nav>
                             <a href="#" class="nav-link">POLITIQUE</a>
@@ -40,18 +271,74 @@
                             <a href="#" class="nav-link">TECH</a>
                         </nav>
                     </div>
+                    
+                    <!-- Section droite -->
                     <div class="col-md-3 text-end">
-                        <div class="d-flex align-items-center justify-content-end">
+                        <div class="header-right">
+                            <!-- Barre de recherche -->
                             <input type="text" placeholder="Rechercher..." class="search-input">
-                            {% if app.user %}
-                                <a href="{{ path('app_mon_profil') }}" style="color: white; font-size: 1.5rem;">
-                                    <i class="fas fa-user-circle"></i>
-                                </a>
-                            {% else %}
-                                <a href="{{ path('app_login') }}" style="color: white; font-size: 1.5rem;">
-                                    <i class="fas fa-user-circle"></i>
-                                </a>
-                            {% endif %}
+                            
+                            <!-- Gestion des utilisateurs -->
+                            <div id="userSection">
+                                <!-- Si non connecté -->
+                                <div class="user-dropdown" id="notLoggedIn">
+                                    <a href="#" class="user-icon" onclick="toggleUserDropdown(event)">
+                                        <i class="fas fa-user-circle"></i>
+                                    </a>
+                                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                                        <a href="{{ path('app_login') }}" class="user-dropdown-item">
+                                            <i class="fas fa-sign-in-alt"></i>
+                                            Se connecter
+                                        </a>
+                                        <a href="{{ path('app_register') }}" class="user-dropdown-item">
+                                            <i class="fas fa-user-plus"></i>
+                                            S'inscrire
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Si connecté (utilisateur normal) -->
+                                <div class="user-dropdown" id="loggedInUser" style="display: none;">
+                                    <a href="{{ path('app_mon_profil') }}" class="user-icon">
+                                        <i class="fas fa-user-circle"></i>
+                                    </a>
+                                </div>
+                                
+                                <!-- Si admin connecté -->
+                                <div class="user-dropdown" id="loggedInAdmin" style="display: none;">
+                                    <a href="#" class="user-icon" onclick="toggleUserDropdown(event)">
+                                        <i class="fas fa-user-circle"></i>
+                                    </a>
+                                    <div class="user-dropdown-menu" id="adminDropdownMenu">
+                                        <a href="{{ path('app_mon_profil') }}" class="user-dropdown-item">
+                                            <i class="fas fa-user"></i>
+                                            Mon profil
+                                        </a>
+                                        <hr class="dropdown-divider">
+                                        <div class="dropdown-header">
+                                            <i class="fas fa-cog"></i>
+                                            ADMINISTRATION
+                                        </div>
+                                        <a href="{{ path('admin_dashboard') }}" class="user-dropdown-item">
+                                            <i class="fas fa-tachometer-alt"></i>
+                                            Dashboard
+                                        </a>
+                                        <a href="{{ path('admin_reports') }}" class="user-dropdown-item">
+                                            <i class="fas fa-chart-bar"></i>
+                                            Reports
+                                        </a>
+                                        <a href="{{ path('admin_users') }}" class="user-dropdown-item">
+                                            <i class="fas fa-users"></i>
+                                            Utilisateurs
+                                        </a>
+                                        <hr class="dropdown-divider">
+                                        <a href="{{ path('app_logout') }}" class="user-dropdown-item">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                            Se déconnecter
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -62,6 +349,81 @@
 
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <!-- JavaScript pour la gestion des utilisateurs -->
+        <script>
+            // État de connexion basé sur Twig
+            {% if app.user %}
+                {% if is_granted('ROLE_ADMIN') %}
+                    let userState = 'admin';
+                {% else %}
+                    let userState = 'user';
+                {% endif %}
+            {% else %}
+                let userState = 'notLoggedIn';
+            {% endif %}
+
+            // Initialisation de l'affichage selon l'état
+            function initUserInterface() {
+                const notLoggedIn = document.getElementById('notLoggedIn');
+                const loggedInUser = document.getElementById('loggedInUser');
+                const loggedInAdmin = document.getElementById('loggedInAdmin');
+                
+                // Masquer tous les éléments
+                if (notLoggedIn) notLoggedIn.style.display = 'none';
+                if (loggedInUser) loggedInUser.style.display = 'none';
+                if (loggedInAdmin) loggedInAdmin.style.display = 'none';
+                
+                // Afficher selon l'état
+                if (userState === 'notLoggedIn' && notLoggedIn) {
+                    notLoggedIn.style.display = 'block';
+                } else if (userState === 'user' && loggedInUser) {
+                    loggedInUser.style.display = 'block';
+                } else if (userState === 'admin' && loggedInAdmin) {
+                    loggedInAdmin.style.display = 'block';
+                }
+            }
+
+            // Toggle dropdown menu
+            function toggleUserDropdown(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                const dropdown = userState === 'admin' ? 
+                    document.getElementById('adminDropdownMenu') : 
+                    document.getElementById('userDropdownMenu');
+                
+                if (dropdown) {
+                    dropdown.classList.toggle('show');
+                }
+            }
+
+            // Fermer le dropdown si on clique ailleurs
+            document.addEventListener('click', function(event) {
+                const dropdownMenus = document.querySelectorAll('.user-dropdown-menu');
+                dropdownMenus.forEach(menu => {
+                    if (!menu.closest('.user-dropdown').contains(event.target)) {
+                        menu.classList.remove('show');
+                    }
+                });
+            });
+
+            // Initialisation au chargement
+            document.addEventListener('DOMContentLoaded', function() {
+                initUserInterface();
+            });
+        </script>
+
         {% block javascripts %}{% endblock %}
+        
+        {% if app.flashes('journalist_pending') %}
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    {% for message in app.flashes('journalist_pending') %}
+                        alert('{{ message|escape('js') }}');
+                    {% endfor %}
+                });
+            </script>
+        {% endif %}
     </body>
 </html>
