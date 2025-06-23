@@ -616,8 +616,9 @@
                                             {% endif %}
                                             
                                             <!-- Actions du commentaire -->
-                                            {% if app.user and app.user != reponse.auteur %}
-                                                <div class="comment-actions d-flex justify-content-between align-items-center">
+                                            <div class="comment-actions d-flex justify-content-between align-items-center mt-3">
+                                                {% if app.user and app.user != reponse.auteur %}
+                                                    {# ACTIONS POUR LES AUTRES UTILISATEURS #}
                                                     <div class="vote-buttons">
                                                         <button class="btn btn-outline-success vote-btn me-2" 
                                                                 data-reponse-id="{{ reponse.id }}" 
@@ -635,20 +636,42 @@
                                                         </button>
                                                     </div>
                                                     <div class="other-actions">
-                                                {% if app.user and app.user != reponse.auteur %}
-    <a href="{{ path('report_contenu', {type: 'reponse', id: reponse.id}) }}" 
-       class="btn btn-sm btn-outline-warning">🚩 Signaler</a>
-{% endif %}
+                                                        <a href="{{ path('report_contenu', {type: 'reponse', id: reponse.id}) }}" 
+                                                        class="btn btn-sm btn-outline-warning">
+                                                            <i class="fas fa-flag me-1"></i>Signaler
+                                                        </a>
+                                                    </div>
+                                                {% elseif app.user and app.user == reponse.auteur %}
+                                                    {# 🆕 ACTIONS POUR L'AUTEUR DE LA RÉPONSE #}
+                                                    <div class="vote-display">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-thumbs-up me-1"></i>{{ reponse.nbVotesPositifs ?? 0 }} utile(s) • 
+                                                            <i class="fas fa-thumbs-down me-1"></i>{{ reponse.nbVotesNegatifs ?? 0 }} pas utile(s)
+                                                        </small>
+                                                    </div>
+                                                    <div class="author-actions">
+                                                        {# BOUTON SUPPRIMER #}
+                                                        <button type="button" 
+                                                                class="btn btn-sm btn-outline-danger" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#modalSuppressionReponse"
+                                                                data-reponse-id="{{ reponse.id }}"
+                                                                data-reponse-apercu="{{ reponse.contenu|slice(0, 80)|striptags|e('html_attr') }}{{ reponse.contenu|length > 80 ? '...' : '' }}"
+                                                                data-csrf-token="{{ csrf_token('supprimer_reponse_' ~ reponse.id) }}">
+                                                            <i class="fas fa-trash me-1"></i>Supprimer
+                                                        </button>
+                                                    </div>
+                                                {% else %}
+                                                    {# UTILISATEUR NON CONNECTÉ #}
+                                                    <div class="text-center text-muted w-100">
+                                                        <small>
+                                                            <i class="fas fa-thumbs-up me-1"></i>{{ reponse.nbVotesPositifs ?? 0 }} utile(s) • 
+                                                            <i class="fas fa-thumbs-down me-1"></i>{{ reponse.nbVotesNegatifs ?? 0 }} pas utile(s)
+                                                        </small>
+                                                    </div>
+                                                {% endif %}
                                             </div>
-                                                </div>
-                                            {% else %}
-                                                <div class="text-center text-muted">
-                                                    <small>
-                                                        <i class="fas fa-thumbs-up me-1"></i>{{ reponse.nbVotesPositifs ?? 0 }} utile(s) • 
-                                                        <i class="fas fa-thumbs-down me-1"></i>{{ reponse.nbVotesNegatifs ?? 0 }} pas utile(s)
-                                                    </small>
-                                                </div>
-                                            {% endif %}
+                
                                         </div>
                                     </div>
                                 </div>
@@ -730,10 +753,28 @@
                             Partager
                         </button>
                         
+                        {# 🆕 BOUTON SUPPRIMER DEMANDE - VISIBLE SEULEMENT POUR L'AUTEUR #}
+                        {% if app.user and app.user == demande.auteur %}
+                            <button type="button" 
+                                    class="btn btn-outline-danger" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#modalSuppressionDemande"
+                                    data-demande-id="{{ demande.id }}"
+                                    data-demande-titre="{{ demande.titre|e('html_attr') }}"
+                                    data-nb-reponses="{{ demande.nbReponses }}"
+                                    data-nb-votes="{{ demande.votesVeracite|length }}"
+                                    data-csrf-token="{{ csrf_token('supprimer_demande_' ~ demande.id) }}">
+                                <i class="fas fa-trash me-2"></i>Supprimer cette demande
+                            </button>
+                        {% endif %}
+                        
+                        {# BOUTON SIGNALER - VISIBLE POUR LES AUTRES UTILISATEURS #}
                         {% if app.user and app.user != demande.auteur %}
-    <a href="{{ path('report_contenu', {type: 'demande', id: demande.id}) }}" 
-       class="btn btn-sm btn-outline-warning">🚩 Signaler</a>
-{% endif %}
+                            <a href="{{ path('report_contenu', {type: 'demande', id: demande.id}) }}" 
+                            class="btn btn-outline-warning">
+                                <i class="fas fa-flag me-2"></i>Signaler
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -748,9 +789,294 @@
         </a>
     </div>
 </div>
+
+<!-- 🆕 MODAL DE CONFIRMATION DE SUPPRESSION DES COMMENTAIRES -->
+<div class="modal fade" id="modalSuppressionReponse" tabindex="-1" aria-labelledby="modalSuppressionReponseLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalSuppressionReponseLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning border-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Action irréversible</h6>
+                            <p class="mb-0">Cette action supprimera définitivement votre commentaire.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="mb-3">Êtes-vous sûr de vouloir supprimer ce commentaire ?</p>
+                
+                <div class="bg-light p-3 rounded border">
+                    <label class="form-label text-muted small mb-2">
+                        <i class="fas fa-comment me-1"></i>Aperçu du commentaire :
+                    </label>
+                    <div id="apercu-commentaire-modal" class="fw-bold text-dark"></div>
+                </div>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Les votes et interactions liés à ce commentaire seront également supprimés.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmer-suppression-btn">
+                    <i class="fas fa-trash me-1"></i>Supprimer définitivement
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulaire caché pour la suppression des commentaires -->
+<form id="form-suppression-reponse" method="POST" style="display: none;">
+    <input type="hidden" name="_token" id="csrf-token-suppression" value="">
+</form>
+
+<!-- 🆕 MODAL DE CONFIRMATION DE SUPPRESSION DE DEMANDE -->
+<div class="modal fade" id="modalSuppressionDemande" tabindex="-1" aria-labelledby="modalSuppressionDemandeLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalSuppressionDemandeLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Supprimer la demande
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger border-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger me-3"></i>
+                        <div>
+                            <h5 class="alert-heading mb-2">⚠️ Action IRRÉVERSIBLE</h5>
+                            <p class="mb-0">
+                                <strong>Cette action supprimera définitivement votre demande</strong> 
+                                ainsi que toutes les contributions de la communauté.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <h6 class="text-danger mb-3">
+                            <i class="fas fa-file-alt me-2"></i>Demande à supprimer :
+                        </h6>
+                        <div class="bg-light p-3 rounded border">
+                            <div id="titre-demande-modal" class="fw-bold text-dark mb-2"></div>
+                            <small class="text-muted">ID #{{ demande.id }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-warning mb-3">
+                            <i class="fas fa-chart-bar me-2"></i>Impact :
+                        </h6>
+                        <div class="d-flex flex-column gap-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-comments text-info me-2"></i>
+                                <span id="nb-reponses-modal">0</span> contribution(s)
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-vote-yea text-success me-2"></i>
+                                <span id="nb-votes-modal">0</span> évaluation(s)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-warning bg-opacity-10 border border-warning rounded p-3 mb-3">
+                    <h6 class="text-warning mb-2">
+                        <i class="fas fa-users me-2"></i>Conséquences pour la communauté :
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li>Toutes les <strong>contributions des utilisateurs</strong> seront perdues</li>
+                        <li>Tous les <strong>votes et évaluations</strong> seront supprimés</li>
+                        <li>Le <strong>travail de vérification</strong> de la communauté sera perdu</li>
+                        <li>Cette action <strong>ne peut pas être annulée</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmeComprehension">
+                    <label class="form-check-label fw-bold" for="confirmeComprehension">
+                        Je comprends que cette action est irréversible et supprimera tout le contenu associé
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmer-suppression-demande-btn" disabled>
+                    <i class="fas fa-trash me-1"></i>Supprimer définitivement
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulaire caché pour la suppression de demande -->
+<form id="form-suppression-demande" method="POST" style="display: none;">
+    <input type="hidden" name="_token" id="csrf-token-suppression-demande" value="">
+</form>
+
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script src="{{ asset('js/detail.js') }}"></script>
+    <script>
+    // 🗑️ GESTION DE LA SUPPRESSION DES RÉPONSES
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('modalSuppressionReponse');
+        const apercuElement = document.getElementById('apercu-commentaire-modal');
+        const confirmerBtn = document.getElementById('confirmer-suppression-btn');
+        const form = document.getElementById('form-suppression-reponse');
+        const tokenInput = document.getElementById('csrf-token-suppression');
+        
+        let reponseIdASupprimer = null;
+        let csrfTokenAUtiliser = null;
+        
+        // Événement d'ouverture de la modal
+        if (modal) {
+            modal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                
+                // Récupérer les données du bouton
+                reponseIdASupprimer = button.getAttribute('data-reponse-id');
+                const apercu = button.getAttribute('data-reponse-apercu');
+                csrfTokenAUtiliser = button.getAttribute('data-csrf-token');
+                
+                // Mettre à jour l'aperçu
+                apercuElement.textContent = apercu;
+            });
+        }
+        
+        // Événement de confirmation
+        if (confirmerBtn) {
+            confirmerBtn.addEventListener('click', function() {
+                if (!reponseIdASupprimer || !csrfTokenAUtiliser) {
+                    alert('Erreur : Données manquantes pour la suppression.');
+                    return;
+                }
+                
+                // Désactiver le bouton pour éviter les doubles clics
+                confirmerBtn.disabled = true;
+                confirmerBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Suppression...';
+                
+                // Configurer et soumettre le formulaire
+                form.action = '/demande/reponse/' + reponseIdASupprimer + '/supprimer';
+                tokenInput.value = csrfTokenAUtiliser;
+                form.submit();
+            });
+        }
+        
+        // Réinitialiser la modal à la fermeture
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', function() {
+                reponseIdASupprimer = null;
+                csrfTokenAUtiliser = null;
+                if (confirmerBtn) {
+                    confirmerBtn.disabled = false;
+                    confirmerBtn.innerHTML = '<i class="fas fa-trash me-1"></i>Supprimer définitivement';
+                }
+            });
+        }
+
+        // 🗑️ GESTION DE LA SUPPRESSION DES DEMANDES
+        const modalDemande = document.getElementById('modalSuppressionDemande');
+        const titreElement = document.getElementById('titre-demande-modal');
+        const nbReponsesElement = document.getElementById('nb-reponses-modal');
+        const nbVotesElement = document.getElementById('nb-votes-modal');
+        const confirmerBtnDemande = document.getElementById('confirmer-suppression-demande-btn');
+        const formDemande = document.getElementById('form-suppression-demande');
+        const tokenInputDemande = document.getElementById('csrf-token-suppression-demande');
+        const checkboxConfirmation = document.getElementById('confirmeComprehension');
+        
+        let demandeIdASupprimer = null;
+        let csrfTokenDemandeAUtiliser = null;
+        
+        // Événement d'ouverture de la modal
+        if (modalDemande) {
+            modalDemande.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                
+                // Récupérer les données du bouton
+                demandeIdASupprimer = button.getAttribute('data-demande-id');
+                const titreDemande = button.getAttribute('data-demande-titre');
+                const nbReponses = button.getAttribute('data-nb-reponses');
+                const nbVotes = button.getAttribute('data-nb-votes');
+                csrfTokenDemandeAUtiliser = button.getAttribute('data-csrf-token');
+                
+                // Mettre à jour les informations
+                if (titreElement) titreElement.textContent = titreDemande;
+                if (nbReponsesElement) nbReponsesElement.textContent = nbReponses;
+                if (nbVotesElement) nbVotesElement.textContent = nbVotes;
+                
+                // Réinitialiser la checkbox
+                if (checkboxConfirmation) checkboxConfirmation.checked = false;
+                if (confirmerBtnDemande) confirmerBtnDemande.disabled = true;
+            });
+        }
+        
+        // Gestion de la checkbox de confirmation
+        if (checkboxConfirmation) {
+            checkboxConfirmation.addEventListener('change', function() {
+                if (confirmerBtnDemande) {
+                    confirmerBtnDemande.disabled = !this.checked;
+                }
+            });
+        }
+        
+        // Événement de confirmation
+        if (confirmerBtnDemande) {
+            confirmerBtnDemande.addEventListener('click', function() {
+                if (!demandeIdASupprimer || !csrfTokenDemandeAUtiliser) {
+                    alert('Erreur : Données manquantes pour la suppression.');
+                    return;
+                }
+                
+                if (!checkboxConfirmation.checked) {
+                    alert('Veuillez confirmer que vous comprenez les conséquences de cette action.');
+                    return;
+                }
+                
+                // Désactiver le bouton pour éviter les doubles clics
+                confirmerBtnDemande.disabled = true;
+                confirmerBtnDemande.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Suppression en cours...';
+                
+                // Configurer et soumettre le formulaire
+                formDemande.action = '/demande/' + demandeIdASupprimer + '/supprimer';
+                tokenInputDemande.value = csrfTokenDemandeAUtiliser;
+                formDemande.submit();
+            });
+        }
+        
+        // Réinitialiser la modal à la fermeture
+        if (modalDemande) {
+            modalDemande.addEventListener('hidden.bs.modal', function() {
+                demandeIdASupprimer = null;
+                csrfTokenDemandeAUtiliser = null;
+                if (checkboxConfirmation) checkboxConfirmation.checked = false;
+                if (confirmerBtnDemande) {
+                    confirmerBtnDemande.disabled = true;
+                    confirmerBtnDemande.innerHTML = '<i class="fas fa-trash me-1"></i>Supprimer définitivement';
+                }
+            });
+        }
+    });
+    </script>
 {% endblock %}
