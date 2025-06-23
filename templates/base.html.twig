@@ -37,24 +37,24 @@
 
             /* Navigation centrale */
             nav {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 3rem;
-                height: 100%;
-                padding: 0 30px;
-            }
+            display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem; /* Réduit de 3rem à 1.5rem */
+    height: 100%;
+    padding: 0 15px; /* Réduit de 30px à 15px */
+}
 
-            .nav-link {
-                color: white !important;
-                text-decoration: none;
-                font-weight: 500;
-                font-size: 1rem;
-                padding: 12px 20px;
-                border-radius: 4px;
-                transition: all 0.3s ease;
-                white-space: nowrap;
-            }
+.nav-link {
+    color: white !important;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem; /* Réduit de 1rem à 0.95rem */
+    padding: 12px 15px; /* Réduit de 20px à 15px */
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
 
             .nav-link:hover {
                 background-color: rgba(255, 255, 255, 0.1);
@@ -64,24 +64,24 @@
 
             /* Section droite */
             .header-right {
-                display: flex;
-                align-items: center;
-                justify-content: flex-end;
-                gap: 1.5rem;
-                height: 100%;
-                padding-right: 20px;
-            }
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem; /* Réduit de 1.5rem à 1rem */
+    height: 100%;
+    padding-right: 20px;
+}
 
-            .search-input {
-                border: 2px solid rgba(255, 255, 255, 0.3);
-                border-radius: 25px;
-                padding: 8px 16px;
-                background: rgba(255, 255, 255, 0.1);
-                color: white;
-                outline: none;
-                transition: all 0.3s ease;
-                width: 200px;
-            }
+.search-input {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    outline: none;
+    transition: all 0.3s ease;
+    width: 180px; /* Réduit de 200px à 180px */
+}
 
             .search-input::placeholder {
                 color: rgba(255, 255, 255, 0.7);
@@ -188,6 +188,72 @@
                 font-size: 0.75rem;
             }
 
+            /* Footer Styles */
+            .main-footer {
+                background-color: #18273B;
+                color: white;
+                padding: 3rem 0 1rem 0;
+                margin-top: 4rem;
+            }
+
+            .footer-section h5 {
+                color: #ffd700;
+                font-weight: 600;
+                margin-bottom: 1.5rem;
+                font-size: 1.1rem;
+            }
+
+            .footer-link {
+                color: rgba(255, 255, 255, 0.8);
+                text-decoration: none;
+                display: block;
+                padding: 0.4rem 0;
+                transition: color 0.3s ease;
+                font-size: 0.95rem;
+            }
+
+            .footer-link:hover {
+                color: #ffd700;
+                text-decoration: none;
+            }
+
+            .footer-social {
+                display: flex;
+                gap: 1rem;
+                margin-top: 1rem;
+            }
+
+            .social-icon {
+                color: rgba(255, 255, 255, 0.8);
+                font-size: 1.5rem;
+                transition: all 0.3s ease;
+                text-decoration: none;
+            }
+
+            .social-icon:hover {
+                color: #ffd700;
+                transform: translateY(-2px);
+            }
+
+            .footer-bottom {
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+                margin-top: 2rem;
+                padding-top: 1.5rem;
+                text-align: center;
+            }
+
+            .footer-bottom p {
+                color: rgba(255, 255, 255, 0.6);
+                font-size: 0.9rem;
+                margin: 0;
+            }
+
+            .footer-logo {
+                height: 60px;
+                width: auto;
+                margin-bottom: 1rem;
+            }
+
             /* Responsive */
             @media (max-width: 768px) {
                 .main-header .container {
@@ -213,6 +279,14 @@
 
                 .header-right {
                     gap: 1rem;
+                }
+
+                .main-footer {
+                    text-align: center;
+                }
+
+                .footer-social {
+                    justify-content: center;
                 }
             }
 
@@ -250,19 +324,19 @@
     <body>
         <!-- Header commun à toutes les pages -->
         <header class="main-header">
-            <div class="container">
+            <div class="container-fluid">
                 <div class="row align-items-center">
                     <!-- Logo -->
-                    <div class="col-md-3">
-                        <div class="logo-container">
-                            <a href="/">
-                                <img src="{{ asset('images/logoheader_mandarin.png.jpg') }}" alt="Le Mandarin en Travées" class="logo-image">
-                            </a>
-                        </div>
-                    </div>
+                    <div class="col-lg-2 col-md-3">
+    <div class="logo-container">
+        <a href="/">
+            <img src="{{ asset('images/logoheader_mandarin.png.jpg') }}" alt="Le Mandarin en Travées" class="logo-image">
+        </a>
+    </div>
+</div>
                     
                     <!-- Navigation centrale -->
-                    <div class="col-md-6 text-center">
+                    <div class="col-lg-7 col-md-6">
                         <nav>
                             <a href="#" class="nav-link">POLITIQUE</a>
                             <a href="#" class="nav-link">SANTÉ</a>
@@ -273,7 +347,7 @@
                     </div>
                     
                     <!-- Section droite -->
-                    <div class="col-md-3 text-end">
+                    <div class="col-lg-3 col-md-3">
                         <div class="header-right">
                             <!-- Barre de recherche -->
                             <input type="text" placeholder="Rechercher..." class="search-input">
@@ -346,6 +420,36 @@
         </header>
 
         {% block body %}{% endblock %}
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <div class="container">
+                <div class="row">
+                    <!-- Logo et description -->
+                    <div class="col-md-8 mb-4">
+                        <div class="footer-section">
+                            <img src="{{ asset('images/logoheader_mandarin.png.jpg') }}" alt="Le Mandarin en Travées" class="footer-logo">
+                            <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6;">
+                                Le Mandarin en Travées est une plateforme collaborative de fact-checking qui lutte contre la désinformation.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Liens -->
+                    <div class="col-md-4 mb-4">
+                        <div class="footer-section">
+                            <h5>Navigation</h5>
+                            <a href="/" class="footer-link">Accueil</a>
+                            <a href="{{ path('app_register') }}" class="footer-link">Devenir contributeur</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <p>&copy; {{ "now"|date("Y") }} Le Mandarin en Travées. Tous droits réservés.</p>
+                </div>
+            </div>
+        </footer>
 
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

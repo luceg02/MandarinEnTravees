@@ -1,115 +1,410 @@
-/* Styles pour la page détail */
+/* ===== STYLES COMPLETS POUR LA PAGE DÉTAIL ===== */
+
+/* Variables CSS pour la cohérence */
+:root {
+    --primary-color: #667eea;
+    --secondary-color: #1e5a8a;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    --gray-color: #6b7280;
+    --light-gray: #f8f9fa;
+}
+
+/* ===== HEADER DE LA DEMANDE ===== */
 .demande-header {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: white;
     border-radius: 15px;
+    padding: 1.5rem !important;
+    margin-bottom: 1rem !important;
+    position: relative;
+    overflow: hidden;
 }
 
+.demande-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* ===== VERDICT INTÉGRÉ DANS LE HEADER ===== */
+.verdict-integre {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.verdict-integre .verdict-icon {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+}
+
+.verdict-integre .verdict-text {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.verdict-integre .verdict-details {
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+/* ===== SECTION INFORMATIONS ===== */
+.demande-section {
+    background: linear-gradient(135deg, var(--light-gray) 0%, #ffffff 100%);
+    border: 2px solid var(--primary-color);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
+}
+
+/* ===== BADGES ET STATUTS ===== */
 .status-badge {
     font-size: 1rem;
     padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
-.info-card {
-    border-left: 4px solid var(--primary-color);
-    background-color: #f8f9fa;
+.status-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-.sources-link {
-    color: var(--primary-color);
-    text-decoration: none;
-    word-break: break-all;
+/* ===== SYSTÈME DE VOTES ET BADGES UTILISATEURS ===== */
+
+/* Badges de véracité des journalistes */
+.badge-veracite-journaliste {
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    font-size: 0.85rem !important;
+    padding: 0.5rem 1rem !important;
 }
 
-.sources-link:hover {
-    text-decoration: underline;
+/* Badge certifié pour journalistes */
+.badge-certifie {
+    animation: pulse-gold 2s infinite;
+    background: linear-gradient(45deg, var(--warning-color), #fbbf24) !important;
+    border: 1px solid #d97706;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.author-info {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 10px;
+@keyframes pulse-gold {
+    0% { box-shadow: 0 0 5px rgba(251, 191, 36, 0.3); }
+    50% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.6); }
+    100% { box-shadow: 0 0 5px rgba(251, 191, 36, 0.3); }
 }
 
-.timeline-badge {
-    background: var(--primary-color);
-    color: white;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
+/* Conteneur pour alignement des badges */
+.badges-container {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
-/* Styles pour les commentaires */
+/* Votes de véracité avec styles spéciaux */
+.vote-veracite {
+    font-weight: 700;
+    font-size: 0.9rem !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border: 2px solid rgba(255,255,255,0.2);
+    position: relative;
+}
+
+.vote-veracite.vrai {
+    background: linear-gradient(135deg, var(--success-color), #059669);
+    color: white;
+}
+
+.vote-veracite.faux {
+    background: linear-gradient(135deg, var(--danger-color), #dc2626);
+    color: white;
+}
+
+.vote-veracite.trompeur {
+    background: linear-gradient(135deg, var(--warning-color), #d97706);
+    color: white;
+}
+
+.vote-veracite.non-identifiable {
+    background: linear-gradient(135deg, var(--gray-color), #4b5563);
+    color: white;
+}
+
+/* ===== STYLES POUR LES COMMENTAIRES ===== */
 .comment-card {
     transition: all 0.3s ease;
-    border-left: 3px solid #007bff;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-left: 3px solid var(--info-color);
+    background: linear-gradient(135deg, #ffffff 0%, var(--light-gray) 100%);
+    border-radius: 12px;
+    position: relative;
 }
 
 .comment-card:hover {
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     transform: translateY(-2px);
+    border-left-color: var(--primary-color);
 }
 
 .comment-avatar {
     width: 45px;
     height: 45px;
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    background: linear-gradient(135deg, var(--info-color) 0%, #1d4ed8 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-size: 1.1rem;
-    box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
+.comment-avatar.journaliste {
+    background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+/* ===== BOUTONS DE VOTE ===== */
+.vote-btn {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.vote-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.vote-btn:active {
+    transform: translateY(0);
+}
+
+.vote-btn.voted {
+    background-color: var(--info-color);
+    border-color: var(--info-color);
+    color: white;
+    font-weight: 600;
+}
+
+/* Effet de pulsation pour les nouveaux votes */
+@keyframes vote-success {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.vote-btn.success-animation {
+    animation: vote-success 0.3s ease;
+}
+
+/* ===== SECTIONS ET CONTAINERS ===== */
+.info-card {
+    border-left: 4px solid var(--primary-color);
+    background-color: var(--light-gray);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.info-card:hover {
+    border-left-color: var(--secondary-color);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.contributions-section {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 15px;
+    position: relative;
+}
+
+.contributions-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--success-color) 0%, #059669 100%);
+    border-radius: 15px 15px 0 0;
+}
+
+/* ===== SÉPARATEURS ===== */
+.section-divider {
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border-radius: 5px;
+    margin: 2rem 0;
+    position: relative;
+}
+
+.section-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: white;
+    border: 2px solid var(--primary-color);
+    border-radius: 50%;
+}
+
+/* ===== FORMULAIRES ===== */
 .comment-form {
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    background: linear-gradient(135deg, var(--light-gray) 0%, #ffffff 100%);
     border-radius: 15px;
     border: 2px solid #e9ecef;
     transition: all 0.3s ease;
 }
 
 .comment-form:hover {
-    border-color: #007bff;
-    box-shadow: 0 4px 15px rgba(0,123,255,0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
 }
 
-.pagination-custom {
-    background: white;
-    border-radius: 10px;
-    padding: 1rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.vote-btn {
-    font-size: 0.85rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
+/* Options de vote de véracité */
+.vote-option {
+    cursor: pointer;
     transition: all 0.3s ease;
+    background-color: #ffffff;
+    border: 2px solid #e9ecef !important;
 }
 
-.vote-btn:hover {
+.vote-option:hover {
+    background-color: var(--light-gray) !important;
+    border-color: var(--primary-color) !important;
     transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
 }
 
-.no-comments {
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-    border-radius: 15px;
-    border: 2px dashed #dee2e6;
+.vote-option input[type="radio"]:checked {
+    accent-color: var(--primary-color);
 }
 
-/* Styles pour les images */
+.vote-option:has(input[type="radio"]:checked) {
+    background-color: #e3f2fd !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.vote-option:has(input[type="radio"]:checked) strong {
+    color: var(--primary-color);
+}
+
+/* ===== SOURCES ET LIENS ===== */
+.sources-section {
+    background: rgba(102, 126, 234, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 8px;
+}
+
+.sources-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    word-break: break-all;
+    transition: all 0.2s ease;
+}
+
+.sources-link:hover {
+    text-decoration: underline;
+    color: var(--secondary-color);
+}
+
 .uploaded-image img {
     cursor: pointer;
     border: 2px solid #e9ecef;
     transition: all 0.3s ease;
+    border-radius: 8px;
 }
 
 .uploaded-image img:hover {
-    border-color: #007bff;
+    border-color: var(--primary-color);
     transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* ===== ÉTATS VIDES ===== */
+.no-comments {
+    background: linear-gradient(135deg, var(--light-gray) 0%, #ffffff 100%);
+    border-radius: 15px;
+    border: 2px dashed #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.no-comments:hover {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+}
+
+/* ===== TOOLTIPS ===== */
+.justification-tooltip {
+    font-size: 1.2rem;
+    color: var(--gray-color);
+    transition: all 0.2s ease;
+    cursor: help;
+}
+
+.justification-tooltip:hover {
+    color: #374151;
+    transform: scale(1.1);
+}
+
+/* ===== ANIMATIONS GÉNÉRALES ===== */
+.animate-pulse {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Transition fluide pour tous les éléments interactifs */
+* {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .demande-header {
+        padding: 1rem !important;
+    }
+    
+    .badges-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .comment-card {
+        margin-bottom: 1rem;
+    }
+    
+    .vote-btn {
+        font-size: 0.8rem;
+        padding: 0.2rem 0.6rem;
+    }
 }

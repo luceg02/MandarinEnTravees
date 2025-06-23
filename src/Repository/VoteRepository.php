@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Repository;
 
 use App\Entity\Vote;
@@ -33,19 +32,42 @@ class VoteRepository extends ServiceEntityRepository
     }
 
     /**
+     * Compte le nombre d'upvotes pour une réponse donnée
+     */
+    public function countUpvotesForReponse(Reponse $reponse): int
+    {
+        return $this->createQueryBuilder('v')
+            ->select('COUNT(v.id)')
+            ->where('v.reponse = :reponse')
+            ->andWhere('v.type_vote = :type_vote')
+            ->setParameter('reponse', $reponse)
+            ->setParameter('type_vote', Vote::TYPE_UTILE)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Compte le nombre total d'upvotes reçus par un utilisateur sur toutes ses réponses
+     */
+    public function getTotalUpvotesForUser(User $user): int
+    {
+        return $this->createQueryBuilder('v')
+            ->select('COUNT(v.id)')
+            ->join('v.reponse', 'r')
+            ->where('r.auteur = :user')
+            ->andWhere('v.type_vote = :type_vote')
+            ->setParameter('user', $user)
+            ->setParameter('type_vote', Vote::TYPE_UTILE)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * Compte les upvotes reçus par un utilisateur
      */
     public function countUpvotesForUser(User $user): int
     {
-        return $this->createQueryBuilder('v')
-            ->select('COUNT(v.id)')
-            ->leftJoin('v.reponse', 'r')
-            ->andWhere('r.auteur = :user')
-            ->andWhere('v.type = :upvote')
-            ->setParameter('user', $user)
-            ->setParameter('upvote', 'upvote')
-            ->getQuery()
-            ->getSingleScalarResult();
+        return $this->getTotalUpvotesForUser($user);
     }
 
     /**
@@ -57,9 +79,9 @@ class VoteRepository extends ServiceEntityRepository
             ->select('COUNT(v.id)')
             ->leftJoin('v.reponse', 'r')
             ->andWhere('r.auteur = :user')
-            ->andWhere('v.type = :downvote')
+            ->andWhere('v.type_vote = :type_vote')
             ->setParameter('user', $user)
-            ->setParameter('downvote', 'downvote')
+            ->setParameter('type_vote', Vote::TYPE_PAS_UTILE)
             ->getQuery()
             ->getSingleScalarResult();
     }

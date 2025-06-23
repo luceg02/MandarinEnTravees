@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Demande;
 use App\Entity\Reponse;
 use App\Entity\User;
+use App\Entity\Vote;
 use App\Form\DemandeForm;
 use App\Form\AnswerForm;
 use App\Repository\DemandeRepository;
@@ -13,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse; //
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -118,49 +120,100 @@ class DemandeController extends AbstractController
             $form->handleRequest($request);
             
             if ($form->isSubmitted() && $form->isValid()) {
-                // Gestion de l'upload d'image pour la réponse
-                $imageFile = $form->get('imageFile')->getData();
-                if ($imageFile) {
-                    $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                    $safeFilename = $slugger->slug($originalFilename);
-                    $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+                // 🆕 RÉCUPÉRER LES DONNÉES DU VOTE DE VÉRACITÉ
+                $typeVeracite = $request->request->get('type_veracite');
+                $commentaireVeracite = $request->request->get('commentaire_veracite');
+                
+                // Validation des données obligatoires
+                if (empty($typeVeracite)) {
+                    $this->addFlash('error', 'L\'évaluation de véracité est obligatoire pour contribuer.');
+                    return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
+                }
+                
+                // Vérifier que le type de véracité est valide
+                if (!in_array($typeVeracite, [Vote::TYPE_VRAI, Vote::TYPE_FAUX, Vote::TYPE_TROMPEUR, Vote::TYPE_NON_IDENTIFIABLE])) {
+                    $this->addFlash('error', 'Type d\'évaluation de véracité invalide.');
+                    return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
+                }
+                
+                try {
+                    // Gestion de l'upload d'image pour la réponse
+                    $imageFile = $form->get('imageFile')->getData();
+                    if ($imageFile) {
+                        $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                        $safeFilename = $slugger->slug($originalFilename);
+                        $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
 
-                    try {
-                        $imageFile->move(
-                            $this->getParameter('images_directory'),
-                            $newFilename
-                        );
-                        
-                        $sources = $reponse->getSources();
-                        $sources .= ($sources ? "\n" : '') . "Image: " . $newFilename;
-                        $reponse->setSources($sources);
-                        
-                    } catch (FileException $e) {
-                        $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+                        try {
+                            $imageFile->move(
+                                $this->getParameter('images_directory'),
+                                $newFilename
+                            );
+                            
+                            $sources = $reponse->getSources();
+                            $sources .= ($sources ? "\n" : '') . "Image: " . $newFilename;
+                            $reponse->setSources($sources);
+                            
+                        } catch (FileException $e) {
+                            $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+                        }
                     }
+                    
+                    // 1. CRÉER LA RÉPONSE (EXISTANT)
+                    $reponse->setDateCreation(new \DateTimeImmutable());
+                    $reponse->setAuteur($this->getUser());
+                    $reponse->setDemande($demande);
+                    $reponse->setNbVotesPositifs(0);
+                    $reponse->setNbVotesNegatifs(0);
+                    
+                    $entityManager->persist($reponse);
+                    
+                    // 2. 🆕 CRÉER LE VOTE DE VÉRACITÉ
+                    // Vérifier d'abord si l'utilisateur a déjà voté sur cette demande
+                    $voteExistant = $entityManager->getRepository(Vote::class)
+                        ->findOneBy([
+                            'user' => $this->getUser(),
+                            'demande' => $demande
+                        ]);
+                    
+                    if ($voteExistant) {
+                        // Modifier le vote existant
+                        $voteExistant->setTypeVote($typeVeracite);
+                        $voteExistant->setCommentaire($commentaireVeracite);
+                        $voteExistant->setDateVote(new \DateTimeImmutable());
+                    } else {
+                        // Créer un nouveau vote de véracité
+                        $voteVeracite = new Vote();
+                        $voteVeracite->setUser($this->getUser());
+                        $voteVeracite->setDemande($demande);        // ✅ Vote lié à la demande
+                        $voteVeracite->setReponse(null);            // ✅ Pas lié à une réponse
+                        $voteVeracite->setTypeVote($typeVeracite);
+                        $voteVeracite->setCommentaire($commentaireVeracite);
+                        $voteVeracite->setDateVote(new \DateTimeImmutable());
+                        
+                        $entityManager->persist($voteVeracite);
+                    }
+                    
+                    // 3. 🆕 RECALCULER LE VERDICT DE LA DEMANDE
+                    $demande->calculerVerdictAutomatique();
+                    
+                    // 4. METTRE À JOUR LES DONNÉES DE LA DEMANDE
+                    $demande->setNbReponses($demande->getNbReponses() + 1);
+                    $demande->setDateModification(new \DateTimeImmutable());
+                    
+                    // Si c'est la première réponse, changer le statut
+                    if ($demande->getStatut() === 'en_attente') {
+                        $demande->setStatut('en_cours');
+                    }
+                    
+                    // 5. SAUVEGARDER TOUT
+                    $entityManager->flush();
+                    
+                    $this->addFlash('success', 'Votre contribution et votre évaluation ont été enregistrées avec succès !');
+                    
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Erreur lors de l\'enregistrement : ' . $e->getMessage());
                 }
-                
-                // Initialiser la réponse
-                $reponse->setDateCreation(new \DateTimeImmutable());
-                $reponse->setAuteur($this->getUser());
-                $reponse->setDemande($demande);
-                $reponse->setNbVotesPositifs(0);
-                $reponse->setNbVotesNegatifs(0);
-                
-                // Mettre à jour le nombre de réponses de la demande
-                $demande->setNbReponses($demande->getNbReponses() + 1);
-                $demande->setDateModification(new \DateTimeImmutable());
-                
-                // Si c'est la première réponse, changer le statut
-                if ($demande->getStatut() === 'en_attente') {
-                    $demande->setStatut('en_cours');
-                }
-                
-                $entityManager->persist($reponse);
-                $entityManager->persist($demande);
-                $entityManager->flush();
-                
-                $this->addFlash('success', 'Votre contribution a été ajoutée avec succès !');
                 
                 return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
             }
@@ -189,6 +242,70 @@ class DemandeController extends AbstractController
             'demandes' => $demandes,
             'page' => $page
         ]);
+    }
+    
+    /**
+     * 🆕 NOUVELLE ROUTE : Voter sur la véracité d'une demande (via AJAX)
+     * Alternative au système intégré dans le formulaire de réponse
+     */
+    #[Route('/{id}/vote-veracite', name: 'app_demande_vote_veracite', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function voterVeraciteAjax(
+        Demande $demande, 
+        Request $request, 
+        EntityManagerInterface $entityManager
+    ): Response {
+        $typeVote = $request->request->get('type_veracite');
+        $commentaire = $request->request->get('commentaire_veracite');
+
+        // Validation
+        if (!in_array($typeVote, [Vote::TYPE_VRAI, Vote::TYPE_FAUX, Vote::TYPE_TROMPEUR, Vote::TYPE_NON_IDENTIFIABLE])) {
+            $this->addFlash('error', 'Type de vote invalide.');
+            return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
+        }
+
+        try {
+            $currentUser = $this->getUser();
+
+            // Vérifier si l'utilisateur a déjà voté
+            $voteExistant = $entityManager->getRepository(Vote::class)
+                ->findOneBy([
+                    'user' => $currentUser,
+                    'demande' => $demande
+                ]);
+
+            if ($voteExistant) {
+                // Modifier le vote existant
+                $voteExistant->setTypeVote($typeVote);
+                $voteExistant->setCommentaire($commentaire);
+                $voteExistant->setDateVote(new \DateTimeImmutable());
+                $message = 'Votre évaluation a été modifiée.';
+            } else {
+                // Créer un nouveau vote
+                $vote = new Vote();
+                $vote->setUser($currentUser);
+                $vote->setDemande($demande);
+                $vote->setReponse(null);
+                $vote->setTypeVote($typeVote);
+                $vote->setCommentaire($commentaire);
+                $vote->setDateVote(new \DateTimeImmutable());
+                
+                $entityManager->persist($vote);
+                $message = 'Votre évaluation a été enregistrée.';
+            }
+
+            // Recalculer le verdict automatique
+            $demande->calculerVerdictAutomatique();
+            
+            $entityManager->flush();
+            
+            $this->addFlash('success', $message);
+
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de l\'enregistrement du vote.');
+        }
+
+        return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
     }
     
     /**

@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -54,6 +56,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?float $scoreReputation = null;
 
+    // Collections
+    /**
+     * @var Collection<int, Vote>
+     */
+    #[ORM\OneToMany(targetEntity: Vote::class, mappedBy: 'user')]
+    private Collection $votes;
+
+    /**
+     * @var Collection<int, Reponse>
+     */
+    #[ORM\OneToMany(targetEntity: Reponse::class, mappedBy: 'auteur')]
+    private Collection $reponses;
+
+    public function __construct()
+    {
+        $this->votes = new ArrayCollection();
+        $this->reponses = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -70,41 +91,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
-    /**
-     * @see UserInterface
-     * @return list<string>
-     */
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
-
         return array_unique($roles);
     }
 
-    /**
-     * @param list<string> $roles
-     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): ?string
     {
         return $this->password;
@@ -116,13 +120,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function eraseCredentials(): void
     {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
     }
 
     public function getNom(): ?string
@@ -221,5 +220,204 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function isPending(): bool
     {
         return $this->statut_validation === 'en_attente';
+    }
+
+
+    // Collections
+    public function getVotes(): Collection
+    {
+        return $this->votes;
+    }
+
+    public function addVote(Vote $vote): static
+    {
+        if (!$this->votes->contains($vote)) {
+            $this->votes->add($vote);
+            $vote->setUser($this);
+        }
+        return $this;
+    }
+
+    public function removeVote(Vote $vote): static
+    {
+        if ($this->votes->removeElement($vote)) {
+            if ($vote->getUser() === $this) {
+                $vote->setUser(null);
+            }
+        }
+        return $this;
+    }
+
+    public function getReponses(): Collection
+    {
+        return $this->reponses;
+    }
+
+    public function addReponse(Reponse $reponse): static
+    {
+        if (!$this->reponses->contains($reponse)) {
+            $this->reponses->add($reponse);
+            $reponse->setAuteur($this);
+        }
+        return $this;
+    }
+
+    public function removeReponse(Reponse $reponse): static
+    {
+        if ($this->reponses->removeElement($reponse)) {
+            if ($reponse->getAuteur() === $this) {
+                $reponse->setAuteur(null);
+            }
+        }
+        return $this;
+    }
+
+    // =================================================
+    // CALCUL DU SCORE DE FIABILITÉ (NOUVEAU CODE)
+    // =================================================
+
+    /**
+     * Calcule automatiquement le score de fiabilité
+     */
+    public function calculerScoreFiabilite(): float
+    {
+        // Les journalistes n'ont pas de score calculé
+        if ($this->isJournaliste()) {
+            return 0.0;
+        }
+
+        $score = 0.0;
+
+        // 1. Points basés sur les votes reçus sur les réponses
+        foreach ($this->reponses as $reponse) {
+            // ✅ Utilisation des méthodes pondérées au lieu des compteurs simples
+            $votesPositifsPonderes = $reponse->getVotesUtilesPondered();
+            $votesNegatifsPonderes = $reponse->getVotesPasUtilesPondered();
+            
+            // Coefficients adaptés à la pondération (journaliste = 100x)
+            $score += $votesPositifsPonderes * 0.02;  // 2 points pour 100 (= 1 journaliste)
+            $score -= $votesNegatifsPonderes * 0.01;  // 1 point pour 100 (= 1 journaliste)
+            
+            // Bonus pour les réponses très appréciées (seuil adapté à la pondération)
+            if ($votesPositifsPonderes >= 100) {  // Équivaut à ~1 journaliste ou 100 utilisateurs
+                $score += 5;
+            }
+            
+            // Bonus qualité : ratio adapté aux votes pondérés
+            $totalVotesPonderes = $votesPositifsPonderes + $votesNegatifsPonderes;
+            if ($totalVotesPonderes >= 50) {  // Seuil réduit car les votes sont pondérés
+                $ratio = $votesPositifsPonderes / max(1, $votesNegatifsPonderes);
+                if ($ratio >= 3) {
+                    $score += 3;
+                }
+            }
+        }
+
+        // 2. Points d'activité
+        $score += $this->reponses->count() * 1; // +1 point par réponse postée
+
+        // 3. Points d'ancienneté
+        if ($this->date_inscription) {
+            $joursAnciennete = $this->date_inscription->diff(new \DateTimeImmutable())->days;
+            $moisAnciennete = floor($joursAnciennete / 30);
+            $score += min(10, $moisAnciennete * 0.5); // +0.5 par mois, max 10 points
+        }
+
+        // 4. Malus de modération
+        if ($this->statut_moderation === 'banni_temporaire') {
+            $score -= 10;
+        } elseif ($this->statut_moderation === 'banni') {
+            $score -= 20;
+        }
+
+        // Garder le score entre 0 et 100
+        return max(0, min(100, $score));
+    }
+
+    /**
+     * Met à jour le score de réputation en base
+     */
+    public function mettreAJourScore(): void
+    {
+        $this->scoreReputation = $this->calculerScoreFiabilite();
+    }
+
+    /**
+     * Détermine si l'utilisateur est encore "nouveau"
+     */
+    public function isNouveau(): bool
+    {
+        // Les journalistes ne sont jamais "nouveaux"
+        if ($this->isJournaliste()) {
+            return false;
+        }
+
+        // Nouveau si :
+        // - 0 contribution (réponse)
+        // - Moins de 7 jours d'inscription
+        // - Score = 0
+        $ancienneteJours = $this->date_inscription 
+            ? $this->date_inscription->diff(new \DateTimeImmutable())->days 
+            : 0;
+
+        return $this->reponses->count() === 0 
+            && $ancienneteJours < 7 
+            && ($this->scoreReputation ?? 0) === 0;
+    }
+
+    /**
+     * Retourne le niveau basé sur le score (seuils réalistes)
+     */
+    public function getNiveau(): string
+    {
+        if ($this->isJournaliste()) {
+            return 'Journaliste';
+        }
+
+        if ($this->isNouveau()) {
+            return 'Nouveau';
+        }
+
+        $score = $this->scoreReputation ?? 0;
+
+        // Seuils réalistes (plus bas qu'avant)
+        if ($score >= 50) return 'Expert';      // Au lieu de 80
+        if ($score >= 30) return 'Fiable';      // Au lieu de 60  
+        if ($score >= 15) return 'Correct';     // Au lieu de 30
+        if ($score > 0) return 'Débutant';
+        
+        return 'Nouveau';
+    }
+
+    /**
+     * Retourne la couleur CSS pour le niveau
+     */
+    public function getCouleurNiveau(): string
+    {
+        return match($this->getNiveau()) {
+            'Journaliste' => '#f59e0b',  // Jaune
+            'Expert' => '#10b981',       // Vert
+            'Fiable' => '#667eea',       // Bleu
+            'Correct' => '#f59e0b',      // Jaune
+            'Débutant' => '#f97316',     // Orange
+            'Nouveau' => '#e5e7eb',      // Gris
+            default => '#e5e7eb'
+        };
+    }
+
+    /**
+     * Retourne l'icône Font Awesome pour le niveau
+     */
+    public function getIconeNiveau(): string
+    {
+        return match($this->getNiveau()) {
+            'Journaliste' => 'fas fa-newspaper',
+            'Expert' => 'fas fa-star',
+            'Fiable' => 'fas fa-thumbs-up',
+            'Correct' => 'fas fa-user-check',
+            'Débutant' => 'fas fa-exclamation-triangle',
+            'Nouveau' => 'fas fa-user-plus',
+            default => 'fas fa-user'
+        };
     }
 }

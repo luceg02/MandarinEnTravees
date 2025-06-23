@@ -48,8 +48,8 @@
                     <div class="metric-label">Vérifications</div>
                 </div>
                 <div class="metric">
-                    <div class="metric-number">0</div>
-                    <div class="metric-label">Upvotes</div>
+                    <div class="metric-number">{{ totalUpvotes ?? 0 }}</div>
+                    <div class="metric-label">Votes utiles</div>
                 </div>
             </div>
             
@@ -90,8 +90,8 @@
             {% else %}
                 {% for item in items %}
                     {% if item.titre is defined %}
-                        {# C'est une demande #}
-                        <div class="feed-item demande-item">
+                        {# C'est une demande - tout le div est cliquable #}
+                        <a href="{{ path('app_demande_detail', {id: item.id}) }}" class="feed-item demande-item item-clickable" style="text-decoration: none; color: inherit;">
                             <div class="item-header">
                                 <span class="item-badge 
                                     {% if item.statut == 'verifie' %}badge-vrai
@@ -122,7 +122,7 @@
                                     {{ item.nbReponses }} réponses
                                 </span>
                             </div>
-                        </div>
+                        </a>
                     {% else %}
                         {# C'est une réponse #}
                         <div class="feed-item reponse-item">
@@ -148,19 +148,13 @@
                                 </span>
                                 <span class="item-votes">
                                     <i class="fas fa-thumbs-up"></i>
-                                    0 upvotes
+                                    {{ item.upvotes ?? 0 }} vote{{ (item.upvotes ?? 0) > 1 ? 's' : '' }} utile{{ (item.upvotes ?? 0) > 1 ? 's' : '' }}
                                 </span>
                             </div>
                         </div>
                     {% endif %}
                 {% endfor %}
             {% endif %}
-        </div>
-        
-        <div class="profil-actions">
-            <button class="btn-add">
-                <i class="fas fa-plus"></i>
-            </button>
         </div>
     </div>
 </div>

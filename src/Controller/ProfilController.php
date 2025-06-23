@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\DemandeRepository;
 use App\Repository\ReponseRepository;
+use App\Repository\VoteRepository; // Ajout du repository Vote
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,13 +19,17 @@ class ProfilController extends AbstractController
         User $user,
         Request $request,
         DemandeRepository $demandeRepository,
-        ReponseRepository $reponseRepository
+        ReponseRepository $reponseRepository,
+        VoteRepository $voteRepository // Ajout du repository Vote
     ): Response {
         $onglet = $request->query->get('onglet', 'tout');
         
         // Calculer les statistiques de l'utilisateur
         $nbReponses = $reponseRepository->count(['auteur' => $user]);
         $nbDemandes = $demandeRepository->count(['auteur' => $user]);
+        
+        // Calculer le total des upvotes pour l'utilisateur
+        $totalUpvotes = $voteRepository->getTotalUpvotesForUser($user);
         
         // Initialiser TOUTES les variables pour éviter les erreurs
         $demandes = [];
@@ -33,7 +38,6 @@ class ProfilController extends AbstractController
         
         switch ($onglet) {
             case 'demandes':
-                // Simplifier la requête pour éviter l'erreur Doctrine
                 $demandes = $demandeRepository->findBy(
                     ['auteur' => $user],
                     ['dateCreation' => 'DESC']
@@ -42,16 +46,20 @@ class ProfilController extends AbstractController
                 break;
                 
             case 'verifications':
-                // Simplifier la requête pour éviter l'erreur Doctrine
                 $reponses = $reponseRepository->findBy(
                     ['auteur' => $user],
                     ['dateCreation' => 'DESC']
                 );
+                
+                // Ajouter les upvotes pour chaque réponse
+                foreach ($reponses as $reponse) {
+                    $reponse->upvotes = $voteRepository->countUpvotesForReponse($reponse);
+                }
+                
                 $items = $reponses;
                 break;
                 
             default: // 'tout'
-                // Simplifier les requêtes pour éviter l'erreur Doctrine
                 $demandes = $demandeRepository->findBy(
                     ['auteur' => $user],
                     ['dateCreation' => 'DESC'],
@@ -63,6 +71,11 @@ class ProfilController extends AbstractController
                     ['dateCreation' => 'DESC'],
                     10
                 );
+                
+                // Ajouter les upvotes pour chaque réponse
+                foreach ($reponses as $reponse) {
+                    $reponse->upvotes = $voteRepository->countUpvotesForReponse($reponse);
+                }
                 
                 // Mélanger et trier par date
                 $items = array_merge($demandes, $reponses);
@@ -80,6 +93,7 @@ class ProfilController extends AbstractController
             'reponses' => $reponses ?? [],
             'nbReponses' => $nbReponses,
             'nbDemandes' => $nbDemandes,
+            'totalUpvotes' => $totalUpvotes, // Ajouter le total des upvotes
         ]);
     }
 
