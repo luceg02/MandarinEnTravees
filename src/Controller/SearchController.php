@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller;
 
 use App\Repository\DemandeRepository;
@@ -8,50 +9,41 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class HomeController extends AbstractController
+class SearchController extends AbstractController
 {
-    #[Route('/', name: 'app_home')]
-    public function index(
-        Request $request, 
+    #[Route('/recherche', name: 'app_recherche')]
+    public function recherche(
+        Request $request,
         DemandeRepository $demandeRepository,
         UserRepository $userRepository
     ): Response {
-        $categories = [
-            (object)['nom' => 'Politique'],
-            (object)['nom' => 'Santé'],
-            (object)['nom' => 'Économie'],
-            (object)['nom' => 'Société'],
-            (object)['nom' => 'Tech']
-        ];
-       
+        $query = $request->query->get('q', '');
+        
+        // Si pas de recherche, rediriger vers l'accueil
+        if (empty(trim($query))) {
+            return $this->redirectToRoute('app_home');
+        }
+
         // Paramètres de pagination
         $page = $request->query->getInt('page', 1);
-        $limit = 15; // 15 demandes par page
-        $offset = ($page - 1) * $limit;
-       
-        // Récupérer les demandes avec pagination
-        $demandes = $demandeRepository->findBy(
-            [], // critères (aucun = toutes)
-            ['dateCreation' => 'DESC'], // tri par date décroissante
-            $limit, // limite
-            $offset // décalage
-        );
-       
-        // Compter le total pour la pagination
-        $totalDemandes = $demandeRepository->count([]);
+        $limit = 15;
+
+        // Rechercher les demandes
+        $demandes = $demandeRepository->rechercherDemandes($query, $page, $limit);
+        $totalDemandes = $demandeRepository->compterResultatsRecherche($query);
         $totalPages = ceil($totalDemandes / $limit);
 
-        // Top contributeurs - utilisateurs avec le plus de réponses
+        // Top contributeurs (même logique que homepage)
         $topContributeurs = $userRepository->findTopContributeursByReponses(5);
 
         // Statistiques générales
         $statsGenerales = [
-            'totalDemandes' => $totalDemandes,
+            'totalDemandes' => $demandeRepository->count([]),
             'totalContributeursActifs' => $userRepository->countContributeursActifs()
         ];
-       
-        return $this->render('home/index.html.twig', [
-            'categories' => $categories,
+
+        return $this->render('search/index.html.twig', [
+            'query' => $query,
             'demandes' => $demandes,
             'page_courante' => $page,
             'total_pages' => $totalPages,

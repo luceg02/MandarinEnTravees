@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Repository;
 
 use App\Entity\User;
@@ -31,6 +30,35 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $user->setPassword($newHashedPassword);
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
+    }
+
+    /**
+     * Trouve les top contributeurs par nombre de réponses
+     */
+    public function findTopContributeursByReponses(int $limit = 5): array
+    {
+        return $this->createQueryBuilder('u')
+            ->select('u.email, u.nom, u.prenom, u.roles, COUNT(r.id) as nbReponses')
+            ->leftJoin('u.reponses', 'r')
+            ->groupBy('u.id, u.email, u.nom, u.prenom, u.roles')
+            ->having('COUNT(r.id) > 0')
+            ->orderBy('COUNT(r.id)', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Compte les contributeurs actifs
+     */
+    public function countContributeursActifs(): int
+    {
+        return $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.statut_moderation != :banni OR u.statut_moderation IS NULL')
+            ->setParameter('banni', 'banni')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
 //    /**

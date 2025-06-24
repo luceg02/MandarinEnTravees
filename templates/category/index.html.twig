@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Accueil - Le Mandarin en Travées{% endblock %}
+{% block title %}{{ categorie }} - Le Mandarin en Travées{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -8,11 +8,17 @@
 {% endblock %}
 
 {% block body %}
-    <!-- Section héro bleue -->
+    <!-- Section héro pour la catégorie -->
     <section class="hero-section">
         <div class="container">
-            <h1 class="hero-title">Combattons les Fake News ensemble</h1>
-            <p class="hero-subtitle">Rejoignez la communauté la plus active de fact-checkers et gagnez en réputation en défendant la vérité</p>
+            <h1 class="hero-title">Fact-checks : {{ categorie }}</h1>
+            <p class="hero-subtitle">
+                {% if total_demandes > 0 %}
+                    {{ total_demandes }} demande{{ total_demandes > 1 ? 's' : '' }} de vérification dans cette catégorie
+                {% else %}
+                    Aucune demande dans cette catégorie pour le moment
+                {% endif %}
+            </p>
             <a href="{{ path('app_demande_new') }}" class="cta-button">Soumettre une vérification</a>
         </div>
     </section>
@@ -23,18 +29,23 @@
             <div class="row">
                 <!-- Colonne gauche - Fact-checks -->
                 <div class="col-lg-8">
-                    <h2 class="section-title">Derniers Fact-checks</h2>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="section-title">Catégorie : {{ categorie }}</h2>
+                        <a href="{{ path('app_home') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Retour à l'accueil
+                        </a>
+                    </div>
                     
                     <!-- Section des fact-checks -->
                     <section class="fact-checks-section">
                         <p class="text-muted">
                             {% if total_demandes > 0 %}
-                                {{ total_demandes }} demande{{ total_demandes > 1 ? 's' : '' }} de vérification par notre communauté
+                                {{ total_demandes }} demande{{ total_demandes > 1 ? 's' : '' }} de vérification dans la catégorie {{ categorie }}
                                 {% if total_pages > 1 %}
                                     - Page {{ page_courante }} sur {{ total_pages }}
                                 {% endif %}
                             {% else %}
-                                Découvrez les informations en cours de vérification par notre communauté
+                                Aucune demande dans cette catégorie pour le moment
                             {% endif %}
                         </p>
                         
@@ -57,11 +68,9 @@
                                                     {% elseif demande.statut == 'partiellement_vrai' %}
                                                         <span class="status-badge bg-warning">Partiellement vrai</span>
                                                     {% else %}
-                                                        <span class="status-badge bg-info">{{ demande.statut|default('Non défini') }}</span>
+                                                        <span class="status-badge bg-secondary">{{ demande.statut|default('Non défini') }}</span>
                                                     {% endif %}
-                                                    {% if demande.categorie %}
-                                                        <span class="badge bg-info">{{ demande.categorie.nom }}</span>
-                                                    {% endif %}
+                                                    <span class="badge bg-primary">{{ demande.categorie.nom }}</span>
                                                 </div>
                                                 <small class="text-muted card-meta">
                                                     {% set diff = date().diff(demande.dateCreation) %}
@@ -110,7 +119,7 @@
                                         <!-- Page précédente -->
                                         {% if page_courante > 1 %}
                                             <li class="page-item">
-                                                <a class="page-link" href="{{ path('app_home', {page: page_courante - 1}) }}">
+                                                <a class="page-link" href="{{ path('app_demandes_par_categorie', {categorie: categorieSlug, page: page_courante - 1}) }}">
                                                     <i class="fas fa-chevron-left"></i>
                                                     Précédent
                                                 </a>
@@ -130,7 +139,7 @@
                                         
                                         {% if start_page > 1 %}
                                             <li class="page-item">
-                                                <a class="page-link" href="{{ path('app_home', {page: 1}) }}">1</a>
+                                                <a class="page-link" href="{{ path('app_demandes_par_categorie', {categorie: categorieSlug, page: 1}) }}">1</a>
                                             </li>
                                             {% if start_page > 2 %}
                                                 <li class="page-item disabled">
@@ -146,7 +155,7 @@
                                                 </li>
                                             {% else %}
                                                 <li class="page-item">
-                                                    <a class="page-link" href="{{ path('app_home', {page: page_num}) }}">{{ page_num }}</a>
+                                                    <a class="page-link" href="{{ path('app_demandes_par_categorie', {categorie: categorieSlug, page: page_num}) }}">{{ page_num }}</a>
                                                 </li>
                                             {% endif %}
                                         {% endfor %}
@@ -158,14 +167,14 @@
                                                 </li>
                                             {% endif %}
                                             <li class="page-item">
-                                                <a class="page-link" href="{{ path('app_home', {page: total_pages}) }}">{{ total_pages }}</a>
+                                                <a class="page-link" href="{{ path('app_demandes_par_categorie', {categorie: categorieSlug, page: total_pages}) }}">{{ total_pages }}</a>
                                             </li>
                                         {% endif %}
 
                                         <!-- Page suivante -->
                                         {% if page_courante < total_pages %}
                                             <li class="page-item">
-                                                <a class="page-link" href="{{ path('app_home', {page: page_courante + 1}) }}">
+                                                <a class="page-link" href="{{ path('app_demandes_par_categorie', {categorie: categorieSlug, page: page_courante + 1}) }}">
                                                     Suivant
                                                     <i class="fas fa-chevron-right"></i>
                                                 </a>
@@ -176,7 +185,7 @@
                                                     Suivant
                                                     <i class="fas fa-chevron-right"></i>
                                                 </span>
-                            </li>
+                                            </li>
                                         {% endif %}
                                     </ul>
                                 </nav>
@@ -196,9 +205,9 @@
                                 <div class="col-lg-6 text-center">
                                     <div class="empty-state-content">
                                         <i class="fas fa-search text-muted mb-4" style="font-size: 4rem; opacity: 0.3;"></i>
-                                        <h4 class="text-muted mb-3">Aucune demande pour le moment</h4>
+                                        <h4 class="text-muted mb-3">Aucune demande dans cette catégorie</h4>
                                         <p class="text-muted mb-4">
-                                            Soyez le premier à soumettre une demande de fact-checking ! 
+                                            Soyez le premier à soumettre une demande de fact-checking dans la catégorie {{ categorie }} ! 
                                             Votre contribution aidera la communauté à lutter contre la désinformation.
                                         </p>
                                         <a href="{{ path('app_demande_new') }}" class="btn btn-primary btn-lg">
@@ -255,15 +264,22 @@
                         {% endif %}
                     </div>
 
-                    <!-- Tendances (toujours fictives) -->
+                    <!-- Autres catégories -->
                     <div class="sidebar-section">
-                        <h3 class="sidebar-title">Tendances du jour</h3>
-                        <div style="padding: 0.75rem 0; border-bottom: 1px solid #f1f5f9;">
-                            <div style="color: #4a5568; font-weight: 500; font-size: 0.9rem;">Élections européennes (12 questions)</div>
-                        </div>
-                        <div style="padding: 0.75rem 0;">
-                            <div style="color: #4a5568; font-weight: 500; font-size: 0.9rem;">Inflation alimentaire (8 questions)</div>
-                        </div>
+                        <h3 class="sidebar-title">Autres catégories</h3>
+                        {% set categories = ['Politique', 'Santé', 'Économie', 'Société', 'Tech'] %}
+                        {% set categoriesSlugs = ['politique', 'sante', 'economie', 'societe', 'tech'] %}
+                        
+                        {% for i, cat in categories %}
+                            {% if cat != categorie %}
+                                <div style="padding: 0.75rem 0; border-bottom: 1px solid #f1f5f9;">
+                                    <a href="{{ path('app_demandes_par_categorie', {categorie: categoriesSlugs[i]}) }}" 
+                                       style="color: #4a5568; font-weight: 500; font-size: 0.9rem; text-decoration: none;">
+                                        {{ cat }}
+                                    </a>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
 
                     <!-- Statistiques -->
@@ -281,65 +297,4 @@
             </div>
         </div>
     </main>
-
-    <!-- Comment ça marche - Version compacte -->
-    <section class="py-4">
-        <div class="container">
-            <div class="text-center mb-4">
-                <h2 class="h3 fw-bold text-gradient mb-2">Comment ça marche ?</h2>
-                <p class="text-muted">Un processus simple et collaboratif</p>
-            </div>
-            
-            <div class="row g-3">
-                <div class="col-md-3 col-sm-6">
-                    <div class="text-center">
-                        <div class="bg-primary text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" 
-                             style="width: 50px; height: 50px;">
-                            <span class="fw-bold">1</span>
-                        </div>
-                        <h6 class="fw-bold mb-1">Soumission</h6>
-                        <p class="text-muted small mb-0">
-                            Soumettez une information à vérifier
-                        </p>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="text-center">
-                        <div class="bg-info text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" 
-                             style="width: 50px; height: 50px;">
-                            <span class="fw-bold">2</span>
-                        </div>
-                        <h6 class="fw-bold mb-1">Contributeurs</h6>
-                        <p class="text-muted small mb-0">
-                            La communauté apporte des éléments de réponse
-                        </p>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="text-center">
-                        <div class="bg-warning text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" 
-                             style="width: 50px; height: 50px;">
-                            <span class="fw-bold">3</span>
-                        </div>
-                        <h6 class="fw-bold mb-1">Journalistes</h6>
-                        <p class="text-muted small mb-0">
-                            Contribution par nos journalistes accrédités
-                        </p>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="text-center">
-                        <div class="bg-success text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" 
-                             style="width: 50px; height: 50px;">
-                            <span class="fw-bold">4</span>
-                        </div>
-                        <h6 class="fw-bold mb-1">Publication</h6>
-                        <p class="text-muted small mb-0">
-                            Fact-check publié avec label de qualité
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 {% endblock %}

@@ -335,14 +335,15 @@
     </div>
 </div>
                     
-                    <!-- Navigation centrale -->
+                    
+<!-- Navigation centrale -->
                     <div class="col-lg-7 col-md-6">
                         <nav>
-                            <a href="#" class="nav-link">POLITIQUE</a>
-                            <a href="#" class="nav-link">SANTÉ</a>
-                            <a href="#" class="nav-link">ÉCONOMIE</a>
-                            <a href="#" class="nav-link">SOCIÉTÉ</a>
-                            <a href="#" class="nav-link">TECH</a>
+                            <a href="{{ path('app_demandes_par_categorie', {categorie: 'politique'}) }}" class="nav-link">POLITIQUE</a>
+                            <a href="{{ path('app_demandes_par_categorie', {categorie: 'sante'}) }}" class="nav-link">SANTÉ</a>
+                            <a href="{{ path('app_demandes_par_categorie', {categorie: 'economie'}) }}" class="nav-link">ÉCONOMIE</a>
+                            <a href="{{ path('app_demandes_par_categorie', {categorie: 'societe'}) }}" class="nav-link">SOCIÉTÉ</a>
+                            <a href="{{ path('app_demandes_par_categorie', {categorie: 'tech'}) }}" class="nav-link">TECH</a>
                         </nav>
                     </div>
                     
@@ -350,8 +351,12 @@
                     <div class="col-lg-3 col-md-3">
                         <div class="header-right">
                             <!-- Barre de recherche -->
-                            <input type="text" placeholder="Rechercher..." class="search-input">
-                            
+                            <form action="{{ path('app_recherche') }}" method="GET" style="margin: 0;">
+                                <input type="text" name="q" placeholder="Rechercher..." class="search-input" 
+                                       value="{{ app.request.query.get('q') }}" 
+                                       onkeypress="if(event.key==='Enter'){this.form.submit();}">
+                            </form>
+                
                             <!-- Gestion des utilisateurs -->
                             <div id="userSection">
                                 <!-- Si non connecté -->
@@ -399,7 +404,7 @@
                                         </a>
                                         <a href="{{ path('admin_reports') }}" class="user-dropdown-item">
                                             <i class="fas fa-chart-bar"></i>
-                                            Reports
+                                            Signalements
                                         </a>
                                         <a href="{{ path('admin_users') }}" class="user-dropdown-item">
                                             <i class="fas fa-users"></i>
