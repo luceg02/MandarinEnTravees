@@ -326,4 +326,121 @@ class DemandeController extends AbstractController
         // Rechercher des demandes contenant ces mots-clés
         return $demandeRepository->rechercherParMotsCles($mots, 5); // Limite à 5 résultats
     }
+    /** 🗑️ SUPPRESSION D'UNE RÉPONSE (COMMENTAIRE) */
+    #[Route('/reponse/{id}/supprimer', name: 'app_reponse_supprimer', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function supprimerReponse(
+        Reponse $reponse, 
+        Request $request, 
+        EntityManagerInterface $entityManager
+    ): Response {
+        $currentUser = $this->getUser();
+        
+        // 🔒 VÉRIFICATION D'AUTORISATION
+        if ($reponse->getAuteur() !== $currentUser) {
+            $this->addFlash('error', 'Vous ne pouvez supprimer que vos propres commentaires.');
+            return $this->redirectToRoute('app_demande_detail', ['id' => $reponse->getDemande()->getId()]);
+        }
+        
+        // 🛡️ PROTECTION CSRF
+        $token = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('supprimer_reponse_' . $reponse->getId(), $token)) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_demande_detail', ['id' => $reponse->getDemande()->getId()]);
+        }
+        
+        try {
+            $demande = $reponse->getDemande();
+            
+            // 📊 MISE À JOUR DU COMPTEUR DE LA DEMANDE
+            $demande->setNbReponses(max(0, $demande->getNbReponses() - 1));
+            $demande->setDateModification(new \DateTimeImmutable());
+            
+            // 🔄 RECALCULER LE VERDICT (au cas où cette réponse avait un vote de véracité)
+            $demande->calculerVerdictAutomatique();
+            
+            // 🗑️ SUPPRESSION DE LA RÉPONSE
+            // Doctrine supprime automatiquement les votes liés (cascade: ['remove'])
+            $entityManager->remove($reponse);
+            $entityManager->flush();
+            
+            $this->addFlash('success', 'Votre commentaire a été supprimé avec succès.');
+            
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la suppression du commentaire.');
+        }
+        
+        return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
+    }
+    /**
+     * 🗑️ SUPPRESSION D'UNE DEMANDE
+     * Seul l'auteur de la demande peut la supprimer
+     */
+    #[Route('/{id}/supprimer', name: 'app_demande_supprimer', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function supprimerDemande(
+        Demande $demande, 
+        Request $request, 
+        EntityManagerInterface $entityManager
+    ): Response {
+        $currentUser = $this->getUser();
+        
+        // 🔒 VÉRIFICATION D'AUTORISATION
+        if ($demande->getAuteur() !== $currentUser) {
+            $this->addFlash('error', 'Vous ne pouvez supprimer que vos propres demandes.');
+            return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
+        }
+        
+        // 🛡️ PROTECTION CSRF
+        $token = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('supprimer_demande_' . $demande->getId(), $token)) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
+        }
+        
+        // ⚠️ VÉRIFICATION SUPPLÉMENTAIRE : Empêcher la suppression si beaucoup de contributions
+        if ($demande->getNbReponses() > 5) {
+            $this->addFlash('warning', 
+                'Cette demande a déjà reçu ' . $demande->getNbReponses() . ' contributions. ' .
+                'Pour préserver le travail de la communauté, elle ne peut plus être supprimée. ' .
+                'Contactez un administrateur si nécessaire.'
+            );
+            return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
+        }
+        
+        try {
+            // 📊 STATISTIQUES POUR LE MESSAGE DE CONFIRMATION
+            $nbReponses = $demande->getNbReponses();
+            $nbVotes = $demande->getVotesVeracite()->count();
+            $titreDemande = $demande->getTitre();
+            
+            // 🗑️ SUPPRESSION EN CASCADE
+            // Doctrine va automatiquement supprimer :
+            // - Les réponses liées (OneToMany avec cascade)
+            // - Les votes liés aux réponses (OneToMany avec cascade: ['remove'])
+            // - Les votes de véracité sur la demande (OneToMany avec cascade)
+            
+            $entityManager->remove($demande);
+            $entityManager->flush();
+            
+            // 📄 MESSAGE DE SUCCÈS DÉTAILLÉ
+            if ($nbReponses > 0 || $nbVotes > 0) {
+                $this->addFlash('success', 
+                    "La demande \"{$titreDemande}\" a été supprimée avec succès, " .
+                    "ainsi que {$nbReponses} contribution(s) et {$nbVotes} évaluation(s) associées."
+                );
+            } else {
+                $this->addFlash('success', 
+                    "La demande \"{$titreDemande}\" a été supprimée avec succès."
+                );
+            }
+            
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la suppression de la demande : ' . $e->getMessage());
+            return $this->redirectToRoute('app_demande_detail', ['id' => $demande->getId()]);
+        }
+        
+        // 🏠 REDIRECTION VERS L'ACCUEIL
+        return $this->redirectToRoute('app_home');
+    }
 }
