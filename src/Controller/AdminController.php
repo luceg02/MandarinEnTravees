@@ -70,10 +70,10 @@ public function dashboard(): Response
         ->getQuery()
         ->getResult();
     
-    // Activité récente simplifiée
+    // Activité récente 
     $activiteRecente = [];
 
-    // Derniers utilisateurs sans jointure complexe
+    // Derniers utilisateurs 
     $derniersUtilisateurs = $this->userRepository->findBy(
         ['date_inscription' => null], // Trouver ceux qui ont une date
         ['date_inscription' => 'DESC'],
@@ -92,7 +92,7 @@ public function dashboard(): Response
     foreach ($derniersUtilisateurs as $user) {
         $activiteRecente[] = [
             'type' => 'user',
-            'message' => 'Utilisateur: ' . $user->getPrenom() . ' ' . substr($user->getNom(), 0, 1) . '.',
+            'message' => 'Nouveau inscrit: ' . $user->getPrenom() . ' ' . substr($user->getNom(), 0, 1) . '.',
             'temps' => '1h'
         ];
     }
@@ -113,7 +113,7 @@ public function dashboard(): Response
             
             $activiteRecente[] = [
                 'type' => 'fact_check',
-                'message' => 'Demande par ' . $auteur->getPrenom() . ' ' . substr($auteur->getNom(), 0, 1) . '.',
+                'message' => 'Nouvelle demande par ' . $auteur->getPrenom() . ' ' . substr($auteur->getNom(), 0, 1) . '.',
                 'temps' => $temps
             ];
         }

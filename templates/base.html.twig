@@ -16,13 +16,13 @@
                 padding: 15px 0;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 min-height: 120px;
+                position: relative;
             }
 
             .logo-container {
                 display: flex;
                 align-items: center;
                 height: 100%;
-                padding-left: 20px;
             }
 
             .logo-image {
@@ -35,26 +35,61 @@
                 transform: scale(1.05);
             }
 
-            /* Navigation centrale */
-            nav {
-            display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1.5rem; /* Réduit de 3rem à 1.5rem */
-    height: 100%;
-    padding: 0 15px; /* Réduit de 30px à 15px */
-}
+            /* Menu burger */
+            .burger-menu {
+                display: none;
+                flex-direction: column;
+                cursor: pointer;
+                padding: 8px;
+                border-radius: 4px;
+                transition: background-color 0.3s ease;
+            }
 
-.nav-link {
-    color: white !important;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.95rem; /* Réduit de 1rem à 0.95rem */
-    padding: 12px 15px; /* Réduit de 20px à 15px */
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
+            .burger-menu:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+
+            .burger-line {
+                width: 25px;
+                height: 3px;
+                background-color: white;
+                margin: 3px 0;
+                transition: 0.3s;
+                border-radius: 2px;
+            }
+
+            .burger-menu.active .burger-line:nth-child(1) {
+                transform: rotate(-45deg) translate(-5px, 6px);
+            }
+
+            .burger-menu.active .burger-line:nth-child(2) {
+                opacity: 0;
+            }
+
+            .burger-menu.active .burger-line:nth-child(3) {
+                transform: rotate(45deg) translate(-5px, -6px);
+            }
+
+            /* Navigation desktop */
+            .desktop-nav {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 1.5rem;
+                height: 100%;
+                padding: 0 15px;
+            }
+
+            .nav-link {
+                color: white !important;
+                text-decoration: none;
+                font-weight: 500;
+                font-size: 0.95rem;
+                padding: 12px 15px;
+                border-radius: 4px;
+                transition: all 0.3s ease;
+                white-space: nowrap;
+            }
 
             .nav-link:hover {
                 background-color: rgba(255, 255, 255, 0.1);
@@ -62,26 +97,77 @@
                 transform: translateY(-1px);
             }
 
+            /* Menu mobile */
+            .mobile-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background-color: #18273B;
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                z-index: 1000;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(-20px);
+                transition: all 0.3s ease;
+            }
+
+            .mobile-menu.active {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+
+            .mobile-nav {
+                padding: 20px 0;
+            }
+
+            .mobile-nav-item {
+                display: block;
+                color: white;
+                text-decoration: none;
+                padding: 15px 30px;
+                font-weight: 500;
+                font-size: 1rem;
+                transition: all 0.3s ease;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .mobile-nav-item:hover,
+            .mobile-nav-item:focus {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: #ffd700;
+                text-decoration: none;
+            }
+
+            .mobile-nav-item:last-child {
+                border-bottom: none;
+            }
+
             /* Section droite */
             .header-right {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 1rem; /* Réduit de 1.5rem à 1rem */
-    height: 100%;
-    padding-right: 20px;
-}
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 1rem;
+                height: 100%;
+            }
 
-.search-input {
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 25px;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    outline: none;
-    transition: all 0.3s ease;
-    width: 180px; /* Réduit de 200px à 180px */
-}
+            .search-container {
+                position: relative;
+            }
+
+            .search-input {
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-radius: 25px;
+                padding: 8px 16px;
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                outline: none;
+                transition: all 0.3s ease;
+                width: 180px;
+            }
 
             .search-input::placeholder {
                 color: rgba(255, 255, 255, 0.7);
@@ -91,6 +177,28 @@
                 border-color: #ffd700;
                 background: rgba(255, 255, 255, 0.2);
                 box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+            }
+
+            /* Recherche mobile */
+            .mobile-search {
+                display: none;
+                padding: 20px 30px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .mobile-search-input {
+                width: 100%;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-radius: 25px;
+                padding: 12px 20px;
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                outline: none;
+                font-size: 1rem;
+            }
+
+            .mobile-search-input::placeholder {
+                color: rgba(255, 255, 255, 0.7);
             }
 
             .user-icon {
@@ -113,6 +221,34 @@
 
             .user-dropdown {
                 position: relative;
+            }
+
+            /* Conteneur pour l'icône et le nom */
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                color: white;
+                text-decoration: none;
+                padding: 8px 12px;
+                border-radius: 25px;
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+
+            .user-info:hover {
+                background: rgba(255, 255, 255, 0.1);
+                color: #ffd700;
+                text-decoration: none;
+            }
+
+            .user-name {
+                font-size: 0.9rem;
+                font-weight: 500;
+                white-space: nowrap;
+                max-width: 120px;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .user-dropdown-menu {
@@ -254,49 +390,68 @@
                 margin-bottom: 1rem;
             }
 
-            /* Responsive */
-            @media (max-width: 768px) {
-                .main-header .container {
-                    padding: 0 10px;
+            /* Responsive - Mobile First */
+            @media (max-width: 991px) {
+                .main-header {
+                    min-height: 80px;
+                    padding: 10px 0;
                 }
-                
-                nav {
-                    gap: 1rem;
-                }
-                
-                .nav-link {
-                    font-size: 0.9rem;
-                    padding: 6px 10px;
-                }
-                
-                .search-input {
-                    width: 150px;
-                }
-                
+
                 .logo-image {
-                    height: 80px !important;
+                    height: 60px !important;
+                }
+
+                .desktop-nav {
+                    display: none;
+                }
+
+                .burger-menu {
+                    display: flex;
+                }
+
+                .mobile-search {
+                    display: block;
+                }
+
+                .search-container {
+                    display: none;
+                }
+
+                .user-name {
+                    display: none;
                 }
 
                 .header-right {
                     gap: 1rem;
                 }
-
-                .main-footer {
-                    text-align: center;
-                }
-
-                .footer-social {
-                    justify-content: center;
-                }
             }
 
-            @media (max-width: 991px) {
-                nav {
-                    gap: 1.5rem;
+            @media (max-width: 576px) {
+                .main-header {
+                    min-height: 70px;
+                    padding: 8px 0;
                 }
-                
-                .nav-link {
+
+                .logo-image {
+                    height: 50px !important;
+                }
+
+                .container-fluid {
+                    padding: 0 15px;
+                }
+
+                .mobile-nav-item {
+                    padding: 12px 20px;
                     font-size: 0.95rem;
+                }
+
+                .mobile-search {
+                    padding: 15px 20px;
+                }
+
+                .user-dropdown-menu {
+                    min-width: 180px;
+                    right: -10px;
                 }
             }
 
@@ -315,6 +470,25 @@
                     opacity: 1;
                 }
             }
+
+            /* Overlay pour fermer le menu mobile */
+            .mobile-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+
+            .mobile-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
         </style>
 
         {% block stylesheets %}
@@ -322,23 +496,25 @@
         {% endblock %}
     </head>
     <body>
+        <!-- Overlay pour mobile -->
+        <div class="mobile-overlay" id="mobileOverlay"></div>
+
         <!-- Header commun à toutes les pages -->
         <header class="main-header">
             <div class="container-fluid">
                 <div class="row align-items-center">
                     <!-- Logo -->
-                    <div class="col-lg-2 col-md-3">
-    <div class="logo-container">
-        <a href="/">
-            <img src="{{ asset('images/logoheader_mandarin.png.jpg') }}" alt="Le Mandarin en Travées" class="logo-image">
-        </a>
-    </div>
-</div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <div class="logo-container">
+                            <a href="/">
+                                <img src="{{ asset('images/logoheader_mandarin.png.jpg') }}" alt="Le Mandarin en Travées" class="logo-image">
+                            </a>
+                        </div>
+                    </div>
                     
-                    
-<!-- Navigation centrale -->
-                    <div class="col-lg-7 col-md-6">
-                        <nav>
+                    <!-- Navigation desktop -->
+                    <div class="col-lg-7 d-none d-lg-block">
+                        <nav class="desktop-nav">
                             <a href="{{ path('app_demandes_par_categorie', {categorie: 'politique'}) }}" class="nav-link">POLITIQUE</a>
                             <a href="{{ path('app_demandes_par_categorie', {categorie: 'sante'}) }}" class="nav-link">SANTÉ</a>
                             <a href="{{ path('app_demandes_par_categorie', {categorie: 'economie'}) }}" class="nav-link">ÉCONOMIE</a>
@@ -348,14 +524,23 @@
                     </div>
                     
                     <!-- Section droite -->
-                    <div class="col-lg-3 col-md-3">
+                    <div class="col-6 col-md-9 col-lg-3">
                         <div class="header-right">
-                            <!-- Barre de recherche -->
-                            <form action="{{ path('app_recherche') }}" method="GET" style="margin: 0;">
-                                <input type="text" name="q" placeholder="Rechercher..." class="search-input" 
-                                       value="{{ app.request.query.get('q') }}" 
-                                       onkeypress="if(event.key==='Enter'){this.form.submit();}">
-                            </form>
+                            <!-- Menu burger (mobile) -->
+                            <div class="burger-menu d-lg-none" id="burgerMenu">
+                                <div class="burger-line"></div>
+                                <div class="burger-line"></div>
+                                <div class="burger-line"></div>
+                            </div>
+
+                            <!-- Barre de recherche (desktop) -->
+                            <div class="search-container d-none d-lg-block">
+                                <form action="{{ path('app_recherche') }}" method="GET" style="margin: 0;">
+                                    <input type="text" name="q" placeholder="Rechercher..." class="search-input" 
+                                           value="{{ app.request.query.get('q') }}" 
+                                           onkeypress="if(event.key==='Enter'){this.form.submit();}">
+                                </form>
+                            </div>
                 
                             <!-- Gestion des utilisateurs -->
                             <div id="userSection">
@@ -376,19 +561,35 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Si connecté (utilisateur normal) -->
+                                <!-- Si connecté (utilisateur normal/journaliste) -->
                                 <div class="user-dropdown" id="loggedInUser" style="display: none;">
-                                    <a href="{{ path('app_mon_profil') }}" class="user-icon">
-                                        <i class="fas fa-user-circle"></i>
+                                    <a href="{{ path('app_mon_profil') }}" class="user-info">
+                                        <i class="fas fa-user-circle" style="font-size: 1.8rem;"></i>
+                                        <span class="user-name">
+                                            {% if app.user %}
+                                                {{ app.user.prenom|default('') }} {{ app.user.nom|default('') }}
+                                            {% endif %}
+                                        </span>
                                     </a>
                                 </div>
                                 
                                 <!-- Si admin connecté -->
                                 <div class="user-dropdown" id="loggedInAdmin" style="display: none;">
-                                    <a href="#" class="user-icon" onclick="toggleUserDropdown(event)">
-                                        <i class="fas fa-user-circle"></i>
+                                    <a href="#" class="user-info" onclick="toggleUserDropdown(event)">
+                                        <i class="fas fa-user-circle" style="font-size: 1.8rem;"></i>
+                                        <span class="user-name">
+                                            {% if app.user %}
+                                                {{ app.user.prenom|default('') }} {{ app.user.nom|default('') }}
+                                            {% endif %}
+                                        </span>
                                     </a>
                                     <div class="user-dropdown-menu" id="adminDropdownMenu">
+                                        <div class="dropdown-header" style="border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 8px; padding-bottom: 8px;">
+                                            <i class="fas fa-user"></i>
+                                            {% if app.user %}
+                                                {{ app.user.prenom|default('') }} {{ app.user.nom|default('') }}
+                                            {% endif %}
+                                        </div>
                                         <a href="{{ path('app_mon_profil') }}" class="user-dropdown-item">
                                             <i class="fas fa-user"></i>
                                             Mon profil
@@ -421,6 +622,42 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Menu mobile -->
+            <div class="mobile-menu" id="mobileMenu">
+                <!-- Recherche mobile -->
+                <div class="mobile-search">
+                    <form action="{{ path('app_recherche') }}" method="GET" style="margin: 0;">
+                        <input type="text" name="q" placeholder="Rechercher..." class="mobile-search-input" 
+                               value="{{ app.request.query.get('q') }}" 
+                               onkeypress="if(event.key==='Enter'){this.form.submit();}">
+                    </form>
+                </div>
+
+                <!-- Navigation mobile -->
+                <nav class="mobile-nav">
+                    <a href="{{ path('app_demandes_par_categorie', {categorie: 'politique'}) }}" class="mobile-nav-item">
+                        <i class="fas fa-landmark" style="margin-right: 10px; width: 20px;"></i>
+                        POLITIQUE
+                    </a>
+                    <a href="{{ path('app_demandes_par_categorie', {categorie: 'sante'}) }}" class="mobile-nav-item">
+                        <i class="fas fa-heartbeat" style="margin-right: 10px; width: 20px;"></i>
+                        SANTÉ
+                    </a>
+                    <a href="{{ path('app_demandes_par_categorie', {categorie: 'economie'}) }}" class="mobile-nav-item">
+                        <i class="fas fa-chart-line" style="margin-right: 10px; width: 20px;"></i>
+                        ÉCONOMIE
+                    </a>
+                    <a href="{{ path('app_demandes_par_categorie', {categorie: 'societe'}) }}" class="mobile-nav-item">
+                        <i class="fas fa-users" style="margin-right: 10px; width: 20px;"></i>
+                        SOCIÉTÉ
+                    </a>
+                    <a href="{{ path('app_demandes_par_categorie', {categorie: 'tech'}) }}" class="mobile-nav-item">
+                        <i class="fas fa-laptop-code" style="margin-right: 10px; width: 20px;"></i>
+                        TECH
+                    </a>
+                </nav>
             </div>
         </header>
 
@@ -459,7 +696,7 @@
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
         
-        <!-- JavaScript pour la gestion des utilisateurs -->
+        <!-- JavaScript pour la gestion des utilisateurs et du menu mobile -->
         <script>
             // État de connexion basé sur Twig
             {% if app.user %}
@@ -471,6 +708,55 @@
             {% else %}
                 let userState = 'notLoggedIn';
             {% endif %}
+
+            // Gestion du menu mobile
+            const burgerMenu = document.getElementById('burgerMenu');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+
+            function toggleMobileMenu() {
+                burgerMenu.classList.toggle('active');
+                mobileMenu.classList.toggle('active');
+                mobileOverlay.classList.toggle('active');
+                
+                // Empêcher le scroll du body quand le menu est ouvert
+                if (mobileMenu.classList.contains('active')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            }
+
+            function closeMobileMenu() {
+                burgerMenu.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                mobileOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            // Event listeners pour le menu mobile
+            if (burgerMenu) {
+                burgerMenu.addEventListener('click', toggleMobileMenu);
+            }
+
+            if (mobileOverlay) {
+                mobileOverlay.addEventListener('click', closeMobileMenu);
+            }
+
+            // Fermer le menu mobile lors du clic sur un lien
+            const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+            mobileNavItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    setTimeout(closeMobileMenu, 100);
+                });
+            });
+
+            // Fermer le menu mobile sur redimensionnement
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 992) {
+                    closeMobileMenu();
+                }
+            });
 
             // Initialisation de l'affichage selon l'état
             function initUserInterface() {
@@ -515,6 +801,18 @@
                         menu.classList.remove('show');
                     }
                 });
+            });
+
+            // Gestion des touches clavier
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeMobileMenu();
+                    // Fermer aussi les dropdowns
+                    const dropdownMenus = document.querySelectorAll('.user-dropdown-menu');
+                    dropdownMenus.forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                }
             });
 
             // Initialisation au chargement
