@@ -1,0 +1,324 @@
+{# ===== COMPOSANT : LISTE DES CONTRIBUTIONS ===== #}
+{# Variables attendues : demande, app #}
+
+<!-- Section CONTRIBUTIONS/RÉPONSES -->
+<div class="contributions-section p-4 mb-4">
+    <div class="d-flex align-items-center mb-4">
+        <div class="me-3">
+            <div class="section-icon section-icon-contributions">
+                <i class="fas fa-comments fa-lg"></i>
+            </div>
+        </div>
+        <div>
+            <h2 class="section-title-contributions">Contributions de la communauté</h2>
+            <small class="text-muted">Vérifications et analyses des utilisateurs</small>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="contributions-card-title">
+                    <i class="fas fa-comments me-2"></i>
+                    Contributions de la communauté
+                    <span class="badge bg-secondary ms-2">{{ demande.nbReponses }}</span>
+                </h3>
+                {% if demande.reponses|length > 0 %}
+                    <small class="text-muted">
+                        <i class="fas fa-sort-amount-down me-1"></i>
+                        Du plus récent au plus ancien
+                    </small>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            {% if demande.reponses|length > 0 %}
+                <!-- Liste des commentaires -->
+                {% for reponse in demande.reponses %}
+                    <div class="comment-card p-4 mb-4 rounded border">
+                        <!-- 🆕 En-tête du commentaire amélioré -->
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="comment-avatar me-3 {% if reponse.auteur.isJournaliste is defined and reponse.auteur.isJournaliste %}journaliste{% endif %}">
+                                {% if reponse.auteur.isJournaliste is defined and reponse.auteur.isJournaliste %}
+                                    <i class="fas fa-newspaper"></i>
+                                {% else %}
+                                    <i class="fas fa-user"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        {# Nom et badges sur la même ligne #}
+                                        <div class="badges-container mb-1">
+                                            <h6 class="mb-0 fw-bold text-dark me-2">
+                                                {% if reponse.auteur.prenom or reponse.auteur.nom %}
+                                                    {{ reponse.auteur.prenom }} {{ reponse.auteur.nom }}
+                                                {% else %}
+                                                    {{ reponse.auteur.email|split('@')[0] }}
+                                                {% endif %}
+                                            </h6>
+                                            
+                                            {# Badge statut utilisateur (journaliste ou score) #}
+                                            {% if reponse.auteur.isJournaliste is defined and reponse.auteur.isJournaliste %}
+                                                <span class="badge-comment-journaliste">
+                                                    <i class="fas fa-newspaper me-1"></i>
+                                                    JOURNALISTE
+                                                </span>
+                                            {% else %}
+                                                {% set scoreCommentaire = reponse.auteur.scoreReputation ?? 0 %}
+                                                {% set pourcentageCommentaire = (scoreCommentaire * 100 / 100)|round %}
+                                                {% if pourcentageCommentaire >= 80 %}
+                                                    <span class="badge-comment-expert">
+                                                        <i class="fas fa-star"></i> Expert ({{ pourcentageCommentaire }}%)
+                                                    </span>
+                                                {% elseif pourcentageCommentaire >= 60 %}
+                                                    <span class="badge-comment-fiable">
+                                                        <i class="fas fa-thumbs-up"></i> Fiable ({{ pourcentageCommentaire }}%)
+                                                    </span>
+                                                {% elseif pourcentageCommentaire >= 30 %}
+                                                    <span class="badge-comment-correct">
+                                                        <i class="fas fa-user-check"></i> Correct ({{ pourcentageCommentaire }}%)
+                                                    </span>
+                                                {% elseif pourcentageCommentaire > 0 %}
+                                                    <span class="badge-comment-debutant">
+                                                        <i class="fas fa-exclamation-triangle"></i> Débutant ({{ pourcentageCommentaire }}%)
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge-comment-nouveau">
+                                                        <i class="fas fa-user-plus"></i> Nouveau
+                                                    </span>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                        
+                                        {# Informations complémentaires #}
+                                        <div class="d-flex align-items-center gap-2">
+                                            <small class="text-muted">
+                                                {% if reponse.auteur.isJournaliste is defined and reponse.auteur.isJournaliste %}
+                                                    <i class="fas fa-star me-1 text-warning"></i>Journaliste accrédité
+                                                {% else %}
+                                                    <i class="fas fa-users me-1"></i>Contributeur
+                                                {% endif %}
+                                            </small>
+                                            <span class="text-muted">•</span>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>
+                                                {{ reponse.dateCreation|date('d/m/Y à H:i') }}
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    {# ===== VOTE DE VÉRACITÉ AVEC DESIGN AMÉLIORÉ ===== #}
+                                    {% set voteVeracite = null %}
+                                    {% for vote in demande.votesVeracite %}
+                                        {% if vote.user == reponse.auteur %}
+                                            {% set voteVeracite = vote %}
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if voteVeracite %}
+                                        <div class="badges-container">
+                                            {# Badge principal du vote #}
+                                            <span class="badge vote-veracite {{ voteVeracite.typeVote }} badge-veracite-journaliste vote-verdict-{{ voteVeracite.typeVote }}">
+                                                <i class="{{ voteVeracite.iconeVote }} me-2"></i>
+                                                <strong>{{ voteVeracite.libelleVote }}</strong>
+                                            </span>
+                                            
+                                            {# Badge "CERTIFIÉE" pour les journalistes #}
+                                            {% if reponse.auteur.isJournaliste is defined and reponse.auteur.isJournaliste %}
+                                                <span class="badge-certifie" 
+                                                      title="Évaluation certifiée par un journaliste accrédité" 
+                                                      data-bs-toggle="tooltip">
+                                                    <i class="fas fa-certificate me-1"></i>
+                                                    <strong>CERTIFIÉE</strong>
+                                                </span>
+                                            {% endif %}
+                                            
+                                            {# Icône justification si commentaire fourni #}
+                                            {% if voteVeracite.commentaire %}
+                                                <i class="fas fa-comment-dots justification-tooltip" 
+                                                   title="Justification : {{ voteVeracite.commentaire }}" 
+                                                   data-bs-toggle="tooltip"
+                                                   data-bs-placement="left"></i>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        {# Pas de vote de véracité mais journaliste #}
+                                        {% if reponse.auteur.isJournaliste is defined and reponse.auteur.isJournaliste %}
+                                            <span class="badge-evaluation-attente">
+                                                <i class="fas fa-hourglass-half me-1"></i>
+                                                Évaluation en attente
+                                            </span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Contenu du commentaire -->
+                                <div class="comment-content mb-3">
+                                    <p class="mb-0 lh-lg text-dark">{{ reponse.contenu|nl2br }}</p>
+                                </div>
+                                
+                                <!-- Sources si présentes -->
+                                {% if reponse.sources %}
+                                    <div class="sources-section mb-3">
+                                        <small class="text-muted fw-bold d-block mb-2">
+                                            <i class="fas fa-link me-1"></i>Sources référencées :
+                                        </small>
+                                        {% set sources = reponse.sources|split('\n') %}
+                                        {% for source in sources %}
+                                            {% if source|trim %}
+                                                <div class="source-item mb-1">
+                                                    {% if 'http' in source %}
+                                                        <i class="fas fa-external-link-alt me-1 source-link-icon"></i>
+                                                        <a href="{{ source|trim }}" target="_blank" class="text-decoration-none small source-link">
+                                                            {{ source|trim }}
+                                                        </a>
+                                                    {% elseif 'Image:' in source %}
+                                                    <div class="uploaded-image">
+                                                        <i class="fas fa-image text-info me-1 uploaded-image-icon"></i>
+                                                        <span class="small text-muted d-block mb-2">{{ source|trim }}</span>
+                                                        {% set imageName = source|replace({'Image: ': ''}) %}
+                                                        <img src="{{ asset('uploads/images/' ~ imageName|trim) }}" 
+                                                            alt="Image partagée" 
+                                                            class="img-comment-source">
+                                                    </div>
+                                                    {% else %}
+                                                        <i class="fas fa-file-alt text-secondary me-1 uploaded-image-icon"></i>
+                                                        <span class="small">{{ source|trim }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Actions du commentaire -->
+                                <div class="comment-actions d-flex justify-content-between align-items-center mt-3">
+                                    {% if app.user and app.user != reponse.auteur %}
+                                        {# ACTIONS POUR LES AUTRES UTILISATEURS #}
+                                        <div class="vote-buttons">
+                                            <button class="btn btn-outline-success vote-btn me-2" 
+                                                    data-reponse-id="{{ reponse.id }}" 
+                                                    data-type="utile">
+                                                <i class="fas fa-thumbs-up me-1"></i>
+                                                Utile
+                                                <span class="badge bg-success ms-1" id="votes-positifs-{{ reponse.id }}">{{ reponse.nbVotesPositifs ?? 0 }}</span>
+                                            </button>
+                                            <button class="btn btn-outline-secondary vote-btn me-2" 
+                                                    data-reponse-id="{{ reponse.id }}" 
+                                                    data-type="pas_utile">
+                                                <i class="fas fa-thumbs-down me-1"></i>
+                                                Pas utile
+                                                <span class="badge bg-secondary ms-1" id="votes-negatifs-{{ reponse.id }}">{{ reponse.nbVotesNegatifs ?? 0 }}</span>
+                                            </button>
+                                        </div>
+                                        <div class="other-actions">
+                                            <a href="{{ path('report_contenu', {type: 'reponse', id: reponse.id}) }}" 
+                                            class="btn btn-sm btn-outline-warning">
+                                                <i class="fas fa-flag me-1"></i>Signaler
+                                            </a>
+                                        </div>
+                                    {% elseif app.user and app.user == reponse.auteur %}
+                                        {# 🆕 ACTIONS POUR L'AUTEUR DE LA RÉPONSE #}
+                                        <div class="vote-display">
+                                            <small class="text-muted">
+                                                <i class="fas fa-thumbs-up me-1"></i>{{ reponse.nbVotesPositifs ?? 0 }} utile(s) • 
+                                                <i class="fas fa-thumbs-down me-1"></i>{{ reponse.nbVotesNegatifs ?? 0 }} pas utile(s)
+                                            </small>
+                                        </div>
+                                        <div class="author-actions">
+                                            {# BOUTON SUPPRIMER #}
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#modalSuppressionReponse"
+                                                    data-reponse-id="{{ reponse.id }}"
+                                                    data-reponse-apercu="{{ reponse.contenu|slice(0, 80)|striptags|e('html_attr') }}{{ reponse.contenu|length > 80 ? '...' : '' }}"
+                                                    data-csrf-token="{{ csrf_token('supprimer_reponse_' ~ reponse.id) }}">
+                                                <i class="fas fa-trash me-1"></i>Supprimer
+                                            </button>
+                                        </div>
+                                    {% else %}
+                                        {# UTILISATEUR NON CONNECTÉ #}
+                                        <div class="text-center text-muted w-100">
+                                            <small>
+                                                <i class="fas fa-thumbs-up me-1"></i>{{ reponse.nbVotesPositifs ?? 0 }} utile(s) • 
+                                                <i class="fas fa-thumbs-down me-1"></i>{{ reponse.nbVotesNegatifs ?? 0 }} pas utile(s)
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+    
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                
+            {% else %}
+                <!-- Message quand aucun commentaire -->
+                <div class="no-comments text-center py-5">
+                    <i class="fas fa-comment-dots text-muted mb-3 no-comments-icon"></i>
+                    <h5 class="text-muted mb-3">Aucune contribution pour le moment</h5>
+                    <p class="text-muted mb-0">
+                        Soyez le premier à apporter des éléments de vérification pour cette demande !
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 🆕 MODAL DE CONFIRMATION DE SUPPRESSION DES COMMENTAIRES -->
+<div class="modal fade" id="modalSuppressionReponse" tabindex="-1" aria-labelledby="modalSuppressionReponseLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalSuppressionReponseLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning border-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Action irréversible</h6>
+                            <p class="mb-0">Cette action supprimera définitivement votre commentaire.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="mb-3">Êtes-vous sûr de vouloir supprimer ce commentaire ?</p>
+                
+                <div class="modal-comment-preview">
+                    <label class="form-label text-muted small mb-2">
+                        <i class="fas fa-comment me-1"></i>Aperçu du commentaire :
+                    </label>
+                    <div id="apercu-commentaire-modal" class="fw-bold text-dark"></div>
+                </div>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Les votes et interactions liés à ce commentaire seront également supprimés.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmer-suppression-btn">
+                    <i class="fas fa-trash me-1"></i>Supprimer définitivement
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulaire caché pour la suppression des commentaires -->
+<form id="form-suppression-reponse" method="POST" style="display: none;">
+    <input type="hidden" name="_token" id="csrf-token-suppression" value="">
+</form>

@@ -1,0 +1,119 @@
+{# ===== FORMULAIRE DE CONTRIBUTION AVEC VOTE DE VÉRACITÉ ===== #}
+{% if app.user and form is defined and form %}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h6><i class="fas fa-plus me-2"></i>Contribuer à cette vérification</h6>
+        </div>
+        <div class="card-body">
+            {{ form_start(form, {'attr': {'id': 'form-contribution'}}) }}
+                
+                {# ===== 1. CONTENU DE LA RÉPONSE ===== #}
+                <div class="mb-3">
+                    <label for="{{ form.contenu.vars.id }}" class="form-label">
+                        <i class="fas fa-comment me-2"></i>Votre contribution
+                        <span class="text-danger">*</span>
+                    </label>
+                    {{ form_widget(form.contenu, {'attr': {'class': 'form-control', 'rows': '4', 'placeholder': 'Apportez des éléments de réponse, des précisions, des sources...'}}) }}
+                </div>
+
+                {# ===== 2. SOURCES (OPTIONNEL) ===== #}
+                <div class="mb-3">
+                    {{ form_row(form.sources) }}
+                </div>
+
+                {# ===== 3. IMAGE (OPTIONNEL) ===== #}
+                {% if form.imageFile is defined %}
+                    <div class="mb-3">
+                        {{ form_row(form.imageFile) }}
+                    </div>
+                {% endif %}
+
+                {# ===== 4. 🆕 VOTE DE VÉRACITÉ OBLIGATOIRE ===== #}
+                <div class="vote-form-section">
+                    <label class="form-label fw-bold mb-3">
+                        <i class="fas fa-balance-scale me-2"></i>
+                        Votre évaluation de cette information :
+                        <span class="text-danger">*</span>
+                    </label>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="d-flex align-items-start p-3 border rounded vote-option h-100">
+                                <input type="radio" name="type_veracite" value="vrai" class="me-3 mt-1" required>
+                                <div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-check-circle text-success me-2 fs-5"></i>
+                                        <strong>Vraie</strong>
+                                    </div>
+                                    <small class="text-muted">L'information est exacte et vérifiable par des sources fiables</small>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="d-flex align-items-start p-3 border rounded vote-option h-100">
+                                <input type="radio" name="type_veracite" value="faux" class="me-3 mt-1" required>
+                                <div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-times-circle text-danger me-2 fs-5"></i>
+                                        <strong>Fausse</strong>
+                                    </div>
+                                    <small class="text-muted">L'information est incorrecte ou mensongère</small>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="d-flex align-items-start p-3 border rounded vote-option h-100">
+                                <input type="radio" name="type_veracite" value="trompeur" class="me-3 mt-1" required>
+                                <div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-exclamation-triangle text-warning me-2 fs-5"></i>
+                                        <strong>Trompeuse</strong>
+                                    </div>
+                                    <small class="text-muted">Partiellement vraie mais sortie de son contexte ou exagérée</small>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="d-flex align-items-start p-3 border rounded vote-option h-100">
+                                <input type="radio" name="type_veracite" value="non_identifiable" class="me-3 mt-1" required>
+                                <div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-question-circle text-secondary me-2 fs-5"></i>
+                                        <strong>Véracité non identifiable</strong>
+                                    </div>
+                                    <small class="text-muted">Impossible à vérifier avec les éléments disponibles</small>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                {# ===== BOUTON SUBMIT ===== #}
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Votre vote comptera avec un poids de <strong>{{ app.user.niveau }}</strong>
+                    </small>
+                    {{ form_widget(form.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% elseif not app.user %}
+    <!-- Message pour utilisateurs non connectés -->
+    <div class="comment-form-guest">
+        <i class="fas fa-sign-in-alt text-muted mb-3 guest-icon"></i>
+        <h5 class="text-muted mb-3">Contribuer à cette demande</h5>
+        <p class="text-muted mb-4">
+            Connectez-vous pour apporter votre expertise et aider à vérifier cette information
+        </p>
+        <a href="{{ path('app_login') }}" class="btn-connect-guest">
+            <i class="fas fa-sign-in-alt me-2"></i>
+            Se connecter pour contribuer
+        </a>
+    </div>
+{% endif %}

@@ -1,0 +1,483 @@
+<div class="row">
+    <!-- Contenu principal -->
+    <div class="col-lg-8">
+        <!-- 🆕 En-tête de la demande avec verdict intégré -->
+        <div class="demande-header">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="d-flex gap-2 flex-wrap">
+                    {# ===== SEULEMENT LES CATÉGORIES (plus de statut redondant) ===== #}
+                    {% if demande.categorie %}
+                        <span class="badge bg-light text-dark status-badge">
+                            <i class="fas fa-tag me-2"></i>{{ demande.categorie.nom }}
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <small class="text-white-50">
+                    ID #{{ demande.id }}
+                </small>
+            </div>
+            
+            <h1 class="h2 fw-bold mb-3">{{ demande.titre }}</h1>
+
+            <div class="d-flex justify-content-between align-items-center text-white-50 mb-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Publié le {{ demande.dateCreation|date('d/m/Y à H:i') }}
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-comments me-2"></i>
+                    {{ demande.nbReponses }} contribution{{ demande.nbReponses > 1 ? 's' : '' }}
+                </div>
+            </div>
+
+            {# ===== 🆕 VERDICT INTÉGRÉ DANS LE HEADER ===== #}
+            {% if demande.verdictAutomatique %}
+                <div class="verdict-integre d-flex align-items-center">
+                    <div class="verdict-icon">
+                        <i class="{{ demande.iconeVerdict }}"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="verdict-text">
+                            Verdict de la communauté : {{ demande.libelleVerdict }}
+                        </div>
+                        <div class="verdict-details">
+                            Confiance : {{ demande.scoreConfiance|round }}% • 
+                            Basé sur {{ demande.votesVeracite|length }} évaluations
+                        </div>
+                    </div>
+                    {# Badge de fiabilité #}
+                    {% set confiance = demande.scoreConfiance|round %}
+                    {% if confiance >= 80 %}
+                        <span class="badge-fiabilite badge-fiable">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            <strong>FIABLE</strong>
+                        </span>
+                    {% elseif confiance >= 60 %}
+                        <span class="badge-fiabilite badge-modere">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            <strong>MODÉRÉ</strong>
+                        </span>
+                    {% elseif confiance >= 40 %}
+                        <span class="badge-fiabilite badge-douteux">
+                            <i class="fas fa-times-circle me-1"></i>
+                            <strong>DOUTEUX</strong>
+                        </span>
+                    {% else %}
+                        <span class="badge-fiabilite badge-inconnu">
+                            <i class="fas fa-question-circle me-1"></i>
+                            <strong>INCONNU</strong>
+                        </span>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="verdict-integre d-flex align-items-center">
+                    <div class="verdict-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="verdict-text">
+                            Vérification en cours...
+                        </div>
+                        <div class="verdict-details">
+                            {{ demande.votesVeracite|length }} évaluations reçues • 
+                            Contribuez pour aider à évaluer cette information !
+                        </div>
+                    </div>
+                    <span class="badge-fiabilite badge-en-cours">
+                        <i class="fas fa-hourglass-half me-1"></i>
+                        <strong>EN COURS</strong>
+                    </span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Section INFORMATIONS SUR LA DEMANDE -->
+        <div class="demande-section p-3 mb-3">
+            <div class="d-flex align-items-center mb-3">
+                <div class="me-3">
+                    <div class="section-icon section-icon-info">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="section-title">Informations sur la demande</h2>
+                    <small class="text-muted">Demande et documents fournis par l'auteur</small>
+                </div>
+            </div>
+
+            <!-- D'ABORD : Auteur (pleine largeur) -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card-info">
+                        <div class="card-header-info">
+                            <h4 class="h6 mb-0">
+                                <i class="fas fa-user me-2"></i>
+                                Auteur de la demande
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <div class="timeline-badge-info">
+                                        {% if demande.auteur.isJournaliste is defined and demande.auteur.isJournaliste %}
+                                            <i class="fas fa-newspaper"></i>
+                                        {% else %}
+                                            <i class="fas fa-user"></i>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">
+                                                {% if demande.auteur.prenom or demande.auteur.nom %}
+                                                    {{ demande.auteur.prenom }} {{ demande.auteur.nom }}
+                                                {% else %}
+                                                    {{ demande.auteur.email|split('@')[0] }}
+                                                {% endif %}
+                                            </h6>
+                                            <small class="text-muted">
+                                                {% if demande.auteur.isJournaliste is defined and demande.auteur.isJournaliste %}
+                                                    <i class="fas fa-star me-1 text-warning"></i>Journaliste accrédité
+                                                {% else %}
+                                                    <i class="fas fa-users me-1"></i>Contributeur
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <!-- Système de scoring cohérent -->
+                                            {% if demande.auteur.isJournaliste is defined and demande.auteur.isJournaliste %}
+                                                <span class="badge-auteur badge-journaliste">
+                                                    <i class="fas fa-newspaper me-1"></i>Journaliste
+                                                </span>
+                                            {% else %}
+                                                {% set score = demande.auteur.scoreReputation ?? 0 %}
+                                                {% set pourcentage = (score * 100 / 100)|round %}
+                                                {% if pourcentage >= 80 %}
+                                                    <span class="badge-auteur badge-expert">
+                                                        <i class="fas fa-star"></i> {{ pourcentage }}% - Expert
+                                                    </span>
+                                                {% elseif pourcentage >= 60 %}
+                                                    <span class="badge-auteur badge-fiable">
+                                                        <i class="fas fa-thumbs-up"></i> {{ pourcentage }}% - Fiable
+                                                    </span>
+                                                {% elseif pourcentage >= 30 %}
+                                                    <span class="badge-auteur badge-correct">
+                                                        <i class="fas fa-user-check"></i> {{ pourcentage }}% - Correct
+                                                    </span>
+                                                {% elseif pourcentage > 0 %}
+                                                    <span class="badge-auteur badge-debutant">
+                                                        <i class="fas fa-exclamation-triangle"></i> {{ pourcentage }}% - Débutant
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge-auteur badge-nouveau">
+                                                        <i class="fas fa-user-plus"></i> 0% - Nouveau
+                                                    </span>
+                                                {% endif %}
+                                            {% endif %}
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar-alt me-1"></i>
+                                                Membre depuis {{ demande.auteur.dateInscription ? demande.auteur.dateInscription|date('m/Y') : 'N/A' }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ENSUITE : Description et Sources côte à côte -->
+            <div class="row">
+                <!-- Description -->
+                <div class="col-lg-8 mb-3">
+                    <div class="card-info h-100">
+                        <div class="card-header-info">
+                            <h4 class="h6 mb-0">
+                                <i class="fas fa-align-left me-2"></i>
+                                Description de la demande
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0 lh-lg">{{ demande.description|nl2br }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sources -->
+                <div class="col-lg-4 mb-3">
+                    {% if demande.liensSources is defined and demande.liensSources %}
+                        <div class="card-info">
+                            <div class="card-header-info">
+                                <h4 class="h6 mb-0">
+                                    <i class="fas fa-link me-2"></i>
+                                    Sources fournies
+                                </h4>
+                            </div>
+                            <div class="card-body sources-container">
+                                {% set sources = demande.liensSources|split('\n') %}
+                                {% for source in sources %}
+                                    {% if source|trim %}
+                                        <div class="source-item">
+                                            {% if 'http' in source %}
+                                                <div class="source-link-wrapper">
+                                                    <i class="fas fa-external-link-alt source-icon"></i>
+                                                    <div class="source-content">
+                                                        {% set cleanUrl = source|trim %}
+                                                        {% set domain = cleanUrl|replace({'https://': '', 'http://': '', 'www.': ''})|split('/')|first %}
+                                                        
+                                                        <a href="{{ cleanUrl }}" target="_blank" class="source-link" title="{{ cleanUrl }}">
+                                                            {% if 'youtube.com' in cleanUrl or 'youtu.be' in cleanUrl %}
+                                                                <i class="fab fa-youtube text-danger me-1"></i>Vidéo YouTube
+                                                            {% elseif 'twitter.com' in cleanUrl or 'x.com' in cleanUrl %}
+                                                                <i class="fab fa-twitter text-info me-1"></i>Post Twitter/X
+                                                            {% elseif 'facebook.com' in cleanUrl %}
+                                                                <i class="fab fa-facebook text-primary me-1"></i>Post Facebook
+                                                            {% elseif 'instagram.com' in cleanUrl %}
+                                                                <i class="fab fa-instagram text-warning me-1"></i>Post Instagram
+                                                            {% elseif 'linkedin.com' in cleanUrl %}
+                                                                <i class="fab fa-linkedin text-info me-1"></i>Post LinkedIn
+                                                            {% else %}
+                                                                <i class="fas fa-globe me-1"></i>{{ domain }}
+                                                            {% endif %}
+                                                        </a>
+                                                        <small class="source-url">{{ cleanUrl|length > 50 ? cleanUrl|slice(0, 47) ~ '...' : cleanUrl }}</small>
+                                                    </div>
+                                                </div>
+                                            {% elseif 'Image:' in source %}
+                                                <div class="uploaded-image">
+                                                    <i class="fas fa-image text-info source-icon"></i>
+                                                    <div class="source-content">
+                                                        <span class="source-link">Image partagée</span>
+                                                        <small class="source-url">{{ source|trim }}</small>
+                                                        {% set imageName = source|replace({'Image: ': ''}) %}
+                                                        <img src="{{ asset('uploads/images/' ~ imageName|trim) }}" 
+                                                            alt="Image partagée" 
+                                                            class="img-source mt-1">
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <div class="source-link-wrapper">
+                                                    <i class="fas fa-file-alt text-secondary source-icon"></i>
+                                                    <div class="source-content">
+                                                        <span class="source-link">Document</span>
+                                                        <small class="source-url">{{ source|trim }}</small>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="card sources-empty">
+                            <div class="card-body d-flex align-items-center justify-content-center text-muted">
+                                <div class="text-center">
+                                    <i class="fas fa-file-alt fa-2x mb-2 opacity-50"></i>
+                                    <p class="mb-0 small">Aucune source fournie</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SÉPARATEUR VISUEL -->
+        <div class="section-divider mb-3">
+            <div class="d-flex align-items-center">
+                <div class="separator-line-left"></div>
+                <div class="separator-line-right"></div>
+            </div>
+        </div>
+
+        <!-- FORMULAIRE DE CONTRIBUTION (COMPOSANT SÉPARÉ) -->
+        {% include 'demande/components/contributionform.html.twig' %}
+
+        <!-- 🆕 LISTE DES CONTRIBUTIONS (COMPOSANT SÉPARÉ) -->
+        {% include 'demande/components/contributions_section.html.twig' with {
+            'demande': demande,
+            'app': app
+        } %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Informations de la demande -->
+        <div class="info-card p-3 mb-4">
+            <h5 class="sidebar-title">
+                <i class="fas fa-info-circle me-2"></i>
+                Informations
+            </h5>
+            
+            <div class="mb-2">
+                <strong>Date de création :</strong>
+                <span class="ms-2">{{ demande.dateCreation|date('d/m/Y à H:i') }}</span>
+            </div>
+            
+            {% if demande.dateModification is defined and demande.dateModification %}
+                <div class="mb-2">
+                    <strong>Dernière modification :</strong>
+                    <span class="ms-2">{{ demande.dateModification|date('d/m/Y à H:i') }}</span>
+                </div>
+            {% endif %}
+            
+            <div class="mb-2">
+                <strong>Contributions :</strong>
+                <span class="ms-2">{{ demande.nbReponses }}</span>
+            </div>
+
+            {% if demande.categorie %}
+                <div class="mb-2">
+                    <strong>Catégorie :</strong>
+                    <span class="ms-2">{{ demande.categorie.nom }}</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h4 class="sidebar-actions-title">
+                    <i class="fas fa-cogs me-2"></i>
+                    Actions
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if app.user %}
+                        <a href="#form-contribution" class="btn-contribute scroll-to-form">
+                            <i class="fas fa-plus me-2"></i>
+                            Contribuer
+                        </a>
+                    {% else %}
+                        <a href="{{ path('app_login') }}" class="btn-contribute">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            Se connecter pour contribuer
+                        </a>
+                    {% endif %}
+                    
+                    <button class="btn btn-outline-secondary" onclick="partagerDemande()">
+                        <i class="fas fa-share-alt me-2"></i>
+                        Partager
+                    </button>
+                    
+                    {# 🆕 BOUTON SUPPRIMER DEMANDE - VISIBLE SEULEMENT POUR L'AUTEUR ET UNIQUEMENT SI AUCUN COMMENTAIRE #}
+                    {% if app.user and app.user == demande.auteur and demande.nbReponses == 0 %}
+                        <button type="button" 
+                                class="btn btn-outline-danger" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modalSuppressionDemande"
+                                data-demande-id="{{ demande.id }}"
+                                data-demande-titre="{{ demande.titre|e('html_attr') }}"
+                                data-nb-reponses="{{ demande.nbReponses }}"
+                                data-nb-votes="{{ demande.votesVeracite|length }}"
+                                data-csrf-token="{{ csrf_token('supprimer_demande_' ~ demande.id) }}">
+                            <i class="fas fa-trash me-2"></i>Supprimer cette demande
+                        </button>
+                    {% endif %}
+                    
+                    {# BOUTON SIGNALER - VISIBLE POUR LES AUTRES UTILISATEURS #}
+                    {% if app.user and app.user != demande.auteur %}
+                        <a href="{{ path('report_contenu', {type: 'demande', id: demande.id}) }}" 
+                        class="btn btn-outline-warning">
+                            <i class="fas fa-flag me-2"></i>Signaler
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🆕 MODAL DE CONFIRMATION DE SUPPRESSION DE DEMANDE -->
+<div class="modal fade" id="modalSuppressionDemande" tabindex="-1" aria-labelledby="modalSuppressionDemandeLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalSuppressionDemandeLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Supprimer la demande
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger border-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger me-3"></i>
+                        <div>
+                            <h5 class="alert-heading mb-2">⚠️ Action IRRÉVERSIBLE</h5>
+                            <p class="mb-0">
+                                <strong>Cette action supprimera définitivement votre demande</strong> 
+                                ainsi que toutes les contributions de la communauté.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <h6 class="text-danger mb-3">
+                            <i class="fas fa-file-alt me-2"></i>Demande à supprimer :
+                        </h6>
+                        <div class="modal-demande-preview">
+                            <div id="titre-demande-modal" class="fw-bold text-dark mb-2"></div>
+                            <small class="text-muted">ID #{{ demande.id }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-warning mb-3">
+                            <i class="fas fa-chart-bar me-2"></i>Impact :
+                        </h6>
+                        <div class="d-flex flex-column gap-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-comments text-info me-2"></i>
+                                <span id="nb-reponses-modal">0</span> contribution(s)
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-vote-yea text-success me-2"></i>
+                                <span id="nb-votes-modal">0</span> évaluation(s)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-consequences">
+                    <h6 class="text-warning mb-2">
+                        <i class="fas fa-users me-2"></i>Conséquences pour la communauté :
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li>Toutes les <strong>contributions des utilisateurs</strong> seront perdues</li>
+                        <li>Tous les <strong>votes et évaluations</strong> seront supprimés</li>
+                        <li>Le <strong>travail de vérification</strong> de la communauté sera perdu</li>
+                        <li>Cette action <strong>ne peut pas être annulée</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmeComprehension">
+                    <label class="form-check-label fw-bold" for="confirmeComprehension">
+                        Je comprends que cette action est irréversible et supprimera tout le contenu associé
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmer-suppression-demande-btn" disabled>
+                    <i class="fas fa-trash me-1"></i>Supprimer définitivement
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulaire caché pour la suppression de demande -->
+<form id="form-suppression-demande" method="POST" style="display: none;">
+    <input type="hidden" name="_token" id="csrf-token-suppression-demande" value="">
+</form>
