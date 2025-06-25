@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initFormulaires();
     initTooltips();
     initScrollActions();
+    initGestionSuppressions();
     
     console.log('✅ Tous les systèmes initialisés');
 });
@@ -154,6 +155,190 @@ function initVotesVeracite() {
     });
     
     console.log(`🏛️ ${optionsVote.length} options de vote de véracité initialisées`);
+}
+
+// ========================================================================
+// SYSTÈME 3 : GESTION DES SUPPRESSIONS
+// ========================================================================
+
+/**
+ * Initialise la gestion des suppressions (réponses et demandes)
+ */
+function initGestionSuppressions() {
+    initSuppressionReponses();
+    initSuppressionDemandes();
+    console.log('🗑️ Système de suppressions initialisé');
+}
+
+/**
+ * Gestion de la suppression des réponses
+ */
+function initSuppressionReponses() {
+    const modal = document.getElementById('modalSuppressionReponse');
+    const apercuElement = document.getElementById('apercu-commentaire-modal');
+    const confirmerBtn = document.getElementById('confirmer-suppression-btn');
+    const form = document.getElementById('form-suppression-reponse');
+    const tokenInput = document.getElementById('csrf-token-suppression');
+    
+    let reponseIdASupprimer = null;
+    let csrfTokenAUtiliser = null;
+    
+    // Événement d'ouverture de la modal
+    if (modal) {
+        modal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            
+            // Récupérer les données du bouton
+            reponseIdASupprimer = button.getAttribute('data-reponse-id');
+            const apercu = button.getAttribute('data-reponse-apercu');
+            csrfTokenAUtiliser = button.getAttribute('data-csrf-token');
+            
+            // Mettre à jour l'aperçu
+            if (apercuElement) {
+                apercuElement.textContent = apercu;
+            }
+            
+            console.log('📝 Modal suppression réponse ouverte:', {reponseIdASupprimer, apercu});
+        });
+    }
+    
+    // Événement de confirmation
+    if (confirmerBtn) {
+        confirmerBtn.addEventListener('click', function() {
+            if (!reponseIdASupprimer || !csrfTokenAUtiliser) {
+                alert('Erreur : Données manquantes pour la suppression.');
+                return;
+            }
+            
+            // Désactiver le bouton pour éviter les doubles clics
+            confirmerBtn.disabled = true;
+            confirmerBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Suppression...';
+            
+            // Configurer et soumettre le formulaire
+            if (form) {
+                form.action = '/demande/reponse/' + reponseIdASupprimer + '/supprimer';
+                if (tokenInput) {
+                    tokenInput.value = csrfTokenAUtiliser;
+                }
+                form.submit();
+            }
+            
+            console.log('🗑️ Suppression réponse en cours:', reponseIdASupprimer);
+        });
+    }
+    
+    // Réinitialiser la modal à la fermeture
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function() {
+            reponseIdASupprimer = null;
+            csrfTokenAUtiliser = null;
+            if (confirmerBtn) {
+                confirmerBtn.disabled = false;
+                confirmerBtn.innerHTML = '<i class="fas fa-trash me-1"></i>Supprimer définitivement';
+            }
+            console.log('🔄 Modal suppression réponse réinitialisée');
+        });
+    }
+}
+
+/**
+ * Gestion de la suppression des demandes
+ */
+function initSuppressionDemandes() {
+    const modalDemande = document.getElementById('modalSuppressionDemande');
+    const titreElement = document.getElementById('titre-demande-modal');
+    const nbReponsesElement = document.getElementById('nb-reponses-modal');
+    const nbVotesElement = document.getElementById('nb-votes-modal');
+    const confirmerBtnDemande = document.getElementById('confirmer-suppression-demande-btn');
+    const formDemande = document.getElementById('form-suppression-demande');
+    const tokenInputDemande = document.getElementById('csrf-token-suppression-demande');
+    const checkboxConfirmation = document.getElementById('confirmeComprehension');
+    
+    let demandeIdASupprimer = null;
+    let csrfTokenDemandeAUtiliser = null;
+    
+    // Événement d'ouverture de la modal
+    if (modalDemande) {
+        modalDemande.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            
+            // Récupérer les données du bouton
+            demandeIdASupprimer = button.getAttribute('data-demande-id');
+            const titreDemande = button.getAttribute('data-demande-titre');
+            const nbReponses = button.getAttribute('data-nb-reponses');
+            const nbVotes = button.getAttribute('data-nb-votes');
+            csrfTokenDemandeAUtiliser = button.getAttribute('data-csrf-token');
+            
+            // Mettre à jour les informations
+            if (titreElement) titreElement.textContent = titreDemande;
+            if (nbReponsesElement) nbReponsesElement.textContent = nbReponses;
+            if (nbVotesElement) nbVotesElement.textContent = nbVotes;
+            
+            // Réinitialiser la checkbox
+            if (checkboxConfirmation) checkboxConfirmation.checked = false;
+            if (confirmerBtnDemande) confirmerBtnDemande.disabled = true;
+            
+            console.log('🏢 Modal suppression demande ouverte:', {
+                demandeIdASupprimer, 
+                titreDemande, 
+                nbReponses, 
+                nbVotes
+            });
+        });
+    }
+    
+    // Gestion de la checkbox de confirmation
+    if (checkboxConfirmation) {
+        checkboxConfirmation.addEventListener('change', function() {
+            if (confirmerBtnDemande) {
+                confirmerBtnDemande.disabled = !this.checked;
+            }
+        });
+    }
+    
+    // Événement de confirmation
+    if (confirmerBtnDemande) {
+        confirmerBtnDemande.addEventListener('click', function() {
+            if (!demandeIdASupprimer || !csrfTokenDemandeAUtiliser) {
+                alert('Erreur : Données manquantes pour la suppression.');
+                return;
+            }
+            
+            if (!checkboxConfirmation || !checkboxConfirmation.checked) {
+                alert('Veuillez confirmer que vous comprenez les conséquences de cette action.');
+                return;
+            }
+            
+            // Désactiver le bouton pour éviter les doubles clics
+            confirmerBtnDemande.disabled = true;
+            confirmerBtnDemande.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Suppression en cours...';
+            
+            // Configurer et soumettre le formulaire
+            if (formDemande) {
+                formDemande.action = '/demande/' + demandeIdASupprimer + '/supprimer';
+                if (tokenInputDemande) {
+                    tokenInputDemande.value = csrfTokenDemandeAUtiliser;
+                }
+                formDemande.submit();
+            }
+            
+            console.log('🗑️ Suppression demande en cours:', demandeIdASupprimer);
+        });
+    }
+    
+    // Réinitialiser la modal à la fermeture
+    if (modalDemande) {
+        modalDemande.addEventListener('hidden.bs.modal', function() {
+            demandeIdASupprimer = null;
+            csrfTokenDemandeAUtiliser = null;
+            if (checkboxConfirmation) checkboxConfirmation.checked = false;
+            if (confirmerBtnDemande) {
+                confirmerBtnDemande.disabled = true;
+                confirmerBtnDemande.innerHTML = '<i class="fas fa-trash me-1"></i>Supprimer définitivement';
+            }
+            console.log('🔄 Modal suppression demande réinitialisée');
+        });
+    }
 }
 
 // ========================================================================
@@ -367,17 +552,12 @@ function initScrollActions() {
 }
 
 // ========================================================================
-// FONCTIONS GLOBALES (accessibles depuis le HTML)
+// FONCTIONS DE DEBUG (à supprimer en production)
 // ========================================================================
 
-// Exposer les fonctions principales pour usage depuis le HTML
-window.partagerDemande = partagerDemande;
-window.afficherNotification = afficherNotification;
-
-console.log('🎯 Système de fact-checking prêt !');
-
-// Ajoutez ceci temporairement dans detail.js pour débugger
-
+/**
+ * Debug du formulaire (fonction temporaire)
+ */
 function debugFormulaire() {
     const form = document.getElementById('form-contribution');
     if (!form) {
@@ -415,13 +595,24 @@ function debugFormulaire() {
     return {contenu, voteVeracite, allInputs, errors};
 }
 
-// Ajouter un bouton de debug temporaire
+// ========================================================================
+// FONCTIONS GLOBALES (accessibles depuis le HTML)
+// ========================================================================
+
+// Exposer les fonctions principales pour usage depuis le HTML
+window.partagerDemande = partagerDemande;
+window.afficherNotification = afficherNotification;
+window.debugFormulaire = debugFormulaire; // À supprimer en production
+
+console.log('🎯 Système de fact-checking complet prêt !');
+
+// Ajouter un bouton de debug temporaire (à supprimer en production)
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('form-contribution');
-    if (form) {
+    if (form && window.location.hostname === 'localhost') { // Seulement en développement
         const debugBtn = document.createElement('button');
         debugBtn.type = 'button';
-        debugBtn.className = 'btn btn-warning btn-sm';
+        debugBtn.className = 'btn btn-warning btn-sm mt-2';
         debugBtn.innerHTML = '🐛 Debug Form';
         debugBtn.onclick = debugFormulaire;
         form.appendChild(debugBtn);
