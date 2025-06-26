@@ -15,6 +15,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\NotNull;
 
 class DemandeForm extends AbstractType
 {
@@ -77,19 +78,13 @@ class DemandeForm extends AbstractType
             ->add('categorie', EntityType::class, [
                 'class' => Categorie::class,
                 'choice_label' => 'nom',
-                'label' => 'Catégorie',
-                'help' => 'Sélectionnez la catégorie qui correspond le mieux à votre demande',
-                'attr' => [
-                    'class' => 'form-select'
-                ],
-                'placeholder' => 'Choisir une catégorie...',
+                'placeholder' => 'Choisissez une catégorie',
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Veuillez sélectionner une catégorie'
-                    ])
-                ]
+                        'message' => 'La catégorie est obligatoire.',
+                    ]),
+                ],
             ])
-            
             ->add('imageFile', FileType::class, [
                 'label' => 'Image ou capture d\'écran (optionnel)',
                 'help' => 'Formats acceptés: JPG, PNG, GIF (max 5 Mo)',
