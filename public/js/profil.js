@@ -1,4 +1,3 @@
-// JavaScript pour la page profil
 document.addEventListener('DOMContentLoaded', function() {
     
     // Animation des éléments au scroll
@@ -22,24 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(item);
     });
 
-    // Gestion du bouton d'ajout
-    const btnAdd = document.querySelector('.btn-add');
-    if (btnAdd) {
-        btnAdd.addEventListener('click', function() {
-            // Ici vous pouvez ajouter la logique pour ouvrir un modal
-            // ou rediriger vers une page de création
-            console.log('Bouton d\'ajout cliqué');
-            
-            // Exemple d'animation de feedback
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1.1)';
-                setTimeout(() => {
-                    this.style.transform = 'scale(1)';
-                }, 150);
-            }, 100);
-        });
-    }
 
     // Animation des métriques au chargement
     const metrics = document.querySelectorAll('.metric-number, .stat-number');

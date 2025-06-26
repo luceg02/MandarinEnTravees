@@ -31,7 +31,7 @@ class RegistrationController extends AbstractController
             // Récupérer le type d'utilisateur sélectionné
             $userType = $form->get('userType')->getData();
             
-            // Encoder le mot de passe
+            
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
             
             // Définir les rôles selon le type d'utilisateur
@@ -56,7 +56,7 @@ class RegistrationController extends AbstractController
             $user->setScoreReputation(0.0);
             $user->setStatutModeration('actif');
             
-            // Sauvegarder en base
+            
             $entityManager->persist($user);
             $entityManager->flush();
             

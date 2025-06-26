@@ -31,7 +31,7 @@ class ProfilController extends AbstractController
         // Calculer le total des upvotes pour l'utilisateur
         $totalUpvotes = $voteRepository->getTotalUpvotesForUser($user);
         
-        // Initialiser TOUTES les variables pour éviter les erreurs
+        
         $demandes = [];
         $reponses = [];
         $items = [];
@@ -51,7 +51,7 @@ class ProfilController extends AbstractController
                     ['dateCreation' => 'DESC']
                 );
                 
-                // Ajouter les upvotes pour chaque réponse
+                
                 foreach ($reponses as $reponse) {
                     $reponse->upvotes = $voteRepository->countUpvotesForReponse($reponse);
                 }
@@ -59,7 +59,7 @@ class ProfilController extends AbstractController
                 $items = $reponses;
                 break;
                 
-            default: // 'tout'
+            default: 
                 $demandes = $demandeRepository->findBy(
                     ['auteur' => $user],
                     ['dateCreation' => 'DESC'],
@@ -72,12 +72,12 @@ class ProfilController extends AbstractController
                     10
                 );
                 
-                // Ajouter les upvotes pour chaque réponse
+                
                 foreach ($reponses as $reponse) {
                     $reponse->upvotes = $voteRepository->countUpvotesForReponse($reponse);
                 }
                 
-                // Mélanger et trier par date
+                
                 $items = array_merge($demandes, $reponses);
                 usort($items, function($a, $b) {
                     return $b->getDateCreation() <=> $a->getDateCreation();
@@ -93,7 +93,7 @@ class ProfilController extends AbstractController
             'reponses' => $reponses ?? [],
             'nbReponses' => $nbReponses,
             'nbDemandes' => $nbDemandes,
-            'totalUpvotes' => $totalUpvotes, // Ajouter le total des upvotes
+            'totalUpvotes' => $totalUpvotes, 
         ]);
     }
 

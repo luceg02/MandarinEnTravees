@@ -272,10 +272,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // =================================================
-    // CALCUL DU SCORE DE FIABILITÉ (NOUVEAU CODE)
-    // =================================================
-
     /**
      * Calcule automatiquement le score de fiabilité
      */

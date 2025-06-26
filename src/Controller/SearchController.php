@@ -19,7 +19,6 @@ class SearchController extends AbstractController
     ): Response {
         $query = $request->query->get('q', '');
         
-        // Si pas de recherche, rediriger vers l'accueil
         if (empty(trim($query))) {
             return $this->redirectToRoute('app_home');
         }

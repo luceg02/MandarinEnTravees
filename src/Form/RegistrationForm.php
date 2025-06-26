@@ -26,11 +26,11 @@ class RegistrationForm extends AbstractType
                     'Journaliste' => 'journaliste',
                 ],
                 'mapped' => false,
-                'expanded' => true, // CHANGÉ : true pour générer des radio buttons
+                'expanded' => true, 
                 'multiple' => false,
                 'required' => true,
                 'data' => 'contributeur',
-                'attr' => ['style' => 'display: none;'], // Caché car vous utilisez les cartes
+                'attr' => ['style' => 'display: none;'], 
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Veuillez sélectionner un type d\'utilisateur.',
