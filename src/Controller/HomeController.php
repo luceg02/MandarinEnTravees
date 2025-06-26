@@ -26,18 +26,17 @@ class HomeController extends AbstractController
        
         // Paramètres de pagination
         $page = $request->query->getInt('page', 1);
-        $limit = 15; // 15 demandes par page
+        $limit = 15; 
         $offset = ($page - 1) * $limit;
        
         // Récupérer les demandes avec pagination
         $demandes = $demandeRepository->findBy(
-            [], // critères (aucun = toutes)
-            ['dateCreation' => 'DESC'], // tri par date décroissante
-            $limit, // limite
-            $offset // décalage
+            [], 
+            ['dateCreation' => 'DESC'], 
+            $limit, 
+            $offset 
         );
        
-        // Compter le total pour la pagination
         $totalDemandes = $demandeRepository->count([]);
         $totalPages = ceil($totalDemandes / $limit);
 
