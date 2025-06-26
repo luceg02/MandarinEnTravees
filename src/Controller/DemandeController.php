@@ -84,7 +84,7 @@ class DemandeController extends AbstractController
             $demande->setStatut('en_attente');
             $demande->setNbReponses(0);
             
-            // CORRECTION : Utiliser l'utilisateur connecté
+            // Utiliser l'utilisateur connecté
             $demande->setAuteur($this->getUser());
             
             $entityManager->persist($demande);

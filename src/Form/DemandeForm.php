@@ -89,7 +89,7 @@ class DemandeForm extends AbstractType
                 'label' => 'Image ou capture d\'écran (optionnel)',
                 'help' => 'Formats acceptés: JPG, PNG, GIF (max 5 Mo)',
                 'required' => false,
-                'mapped' => false, // Ce champ ne correspond pas directement à une propriété de l'entité
+                'mapped' => false, 
                 'attr' => [
                     'class' => 'form-control',
                     'accept' => 'image/*'

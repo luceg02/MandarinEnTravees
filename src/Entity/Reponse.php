@@ -58,7 +58,7 @@ class Reponse
     {
         $this->votes = new ArrayCollection();
         $this->dateCreation = new \DateTimeImmutable();
-        // ✅ S'assurer que les compteurs sont initialisés
+        //S'assurer que les compteurs sont initialisés
         $this->nbVotesPositifs = 0;
         $this->nbVotesNegatifs = 0;
     }
@@ -216,24 +216,20 @@ class Reponse
 
     // ===== MÉTHODES DE CALCUL DES VOTES =====
 
-    /**
-     * Compte les votes "utile" depuis la collection (pour vérification)
-     */
+    //Compte les votes "utile" depuis la collection (pour vérification)
     public function getVotesUtilesFromCollection(): int
     {
         return $this->votes->filter(fn($vote) => $vote->getTypeVote() === Vote::TYPE_UTILE)->count();
     }
 
-    /**
-     * Compte les votes "pas_utile" depuis la collection (pour vérification)
-     */
+    // Compte les votes "pas_utile" depuis la collection (pour vérification)
     public function getVotesPasUtilesFromCollection(): int
     {
         return $this->votes->filter(fn($vote) => $vote->getTypeVote() === Vote::TYPE_PAS_UTILE)->count();
     }
 
     /**
-     * ✅ MÉTHODE PRINCIPALE : Utilise les colonnes pour la performance
+     * MÉTHODE PRINCIPALE : Utilise les colonnes pour la performance
      */
     public function getVotesUtiles(): int
     {
@@ -241,7 +237,7 @@ class Reponse
     }
 
     /**
-     * ✅ MÉTHODE PRINCIPALE : Utilise les colonnes pour la performance
+     * MÉTHODE PRINCIPALE : Utilise les colonnes pour la performance
      */
     public function getVotesPasUtiles(): int
     {
@@ -284,17 +280,13 @@ class Reponse
         return $score;
     }
 
-    /**
-     * Score pondéré net (positifs - négatifs)
-     */
+    //Score pondéré net (positifs - négatifs)
     public function getScorePondere(): int
     {
         return $this->getVotesUtilesPondered() - $this->getVotesPasUtilesPondered();
     }
 
-    /**
-     * Score simple net (positifs - négatifs)
-     */
+    //Score simple net (positifs - négatifs)
     public function getScoreNet(): int
     {
         return $this->getNbVotesPositifs() - $this->getNbVotesNegatifs();

@@ -301,7 +301,7 @@ class Demande
         $verdictGagnant = array_keys($scores, max($scores))[0];
         $scoreMax = max($scores);
         
-        // ✅ CALCUL DE CONFIANCE CORRIGÉ
+        // CALCUL DE CONFIANCE
         // Calculer le poids total de tous les votes
         $poidsTotal = 0;
         foreach ($this->votesVeracite as $vote) {
@@ -365,7 +365,7 @@ class Demande
             return 10.0;
         }
         
-        // ✅ CORRECTION : Utiliser directement le score de réputation
+        // Utiliser directement le score de réputation
         $scoreReputation = 0;
         
         // Essayer plusieurs méthodes pour récupérer le score
