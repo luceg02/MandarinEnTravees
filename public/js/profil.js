@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadMoreContent() {
-        // Ici vous pouvez implémenter le chargement AJAX
+
         console.log('Chargement de plus de contenu...');
         
         // Simulation d'un chargement
